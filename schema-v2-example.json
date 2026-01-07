@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.0",
+  "id": "example-bank-v2",
+  "title": "示例题库 - Schema V2",
+  "description": "支持 Markdown 格式的题库示例",
+  "tags": ["示例", "编程", "算法"],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "single_choice",
+      "content": "在 JavaScript 中，以下哪个方法用于**数组去重**？\n\n```javascript\nconst arr = [1, 2, 2, 3, 4, 4, 5];\n```\n\n我们需要得到 `[1, 2, 3, 4, 5]`",
+      "options": [
+        {
+          "key": "A",
+          "text": "Array.from(new Set(arr))"
+        },
+        {
+          "key": "B",
+          "text": "arr.unique()"
+        },
+        {
+          "key": "C",
+          "text": "arr.distinct()"
+        },
+        {
+          "key": "D",
+          "text": "arr.removeDuplicates()"
+        }
+      ],
+      "answer": {
+        "correct_option_key": "A"
+      },
+      "explanation": "JavaScript 中可以使用 Set 数据结构来去重，Set 会自动去除重复值。",
+      "tags": ["JavaScript", "数组", "ES6"]
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "content": "以下哪些是 **Python** 的特点？\n\n可以选择多个选项。",
+      "options": [
+        {
+          "key": "A",
+          "text": "动态类型"
+        },
+        {
+          "key": "B",
+          "text": "解释型语言"
+        },
+        {
+          "key": "C",
+          "text": "强类型"
+        },
+        {
+          "key": "D",
+          "text": "编译型语言"
+        }
+      ],
+      "answer": {
+        "correct_option_keys": ["A", "B", "C"]
+      },
+      "explanation": "Python 是动态类型、强类型的解释型语言。",
+      "tags": ["Python", "语言特性"]
+    },
+    {
+      "id": "q3",
+      "type": "fill_blank",
+      "content": "在 Git 中，使用 `git commit -m \"message\"` 命令提交更改后，如果想要撤销最近一次提交但保留更改，应该使用什么命令？\n\n请输入完整的 Git 命令（不包括 `git` 前缀）：",
+      "answer": {
+        "expected_answers": ["reset --soft HEAD~1", "reset --soft HEAD^"],
+        "llm_grading": false
+      },
+      "explanation": "`git reset --soft HEAD~1` 会撤销最近一次提交，但保留工作区和暂存区的更改。",
+      "tags": ["Git", "版本控制"]
+    },
+    {
+      "id": "q4",
+      "type": "single_choice",
+      "content": "以下代码的输出是什么？\n\n```python\ndef func(x, y=[]):\n    y.append(x)\n    return y\n\nprint(func(1))\nprint(func(2))\n```",
+      "options": [
+        {
+          "key": "A",
+          "text": "[1] 和 [2]"
+        },
+        {
+          "key": "B",
+          "text": "[1] 和 [1, 2]"
+        },
+        {
+          "key": "C",
+          "text": "[1, 2] 和 [1, 2]"
+        },
+        {
+          "key": "D",
+          "text": "报错"
+        }
+      ],
+      "answer": {
+        "correct_option_key": "B"
+      },
+      "explanation": "Python 的默认参数在函数定义时只会被创建一次，所以多次调用会共享同一个列表对象。这是 Python 的一个常见陷阱。",
+      "tags": ["Python", "陷阱", "默认参数"]
+    },
+    {
+      "id": "q5",
+      "type": "true_false",
+      "content": "在 CSS 中，`position: sticky` 是 `position: relative` 和 `position: fixed` 的**混合体**。",
+      "answer": {
+        "correct_boolean": true
+      },
+      "explanation": "sticky 定位元素在滚动到特定位置之前表现为 relative，之后表现为 fixed。",
+      "tags": ["CSS", "定位"]
+    }
+  ],
+  "created_at": 1704441600000
+}
+

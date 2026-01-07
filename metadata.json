@@ -1,0 +1,5 @@
+{
+  "name": "QuizMaster AI",
+  "description": "A professional quiz application with qb.v1 JSON import, hybrid Local/AI grading, and intelligent mistake analysis.",
+  "requestFramePermissions": []
+}

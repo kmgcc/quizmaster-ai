@@ -1,0 +1,1015 @@
+{
+  "qb_banks": [
+    {
+      "schema_version": "qb.v1",
+      "id": "sample_001",
+      "title": "前端开发基础测试",
+      "description": "包含 React、TypeScript 和 Web 基础概念的示例题库。",
+      "tags": [
+        "前端",
+        "javascript",
+        "react"
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "single_choice",
+          "content": "在 React 函数组件中，用于处理副作用（Side Effects）的 Hook 是？",
+          "options": [
+            {
+              "key": "A",
+              "text": "useState"
+            },
+            {
+              "key": "B",
+              "text": "useEffect"
+            },
+            {
+              "key": "C",
+              "text": "useContext"
+            },
+            {
+              "key": "D",
+              "text": "useReducer"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "useEffect 专门设计用于处理数据获取、订阅等副作用。"
+        },
+        {
+          "id": "q2",
+          "type": "multiple_choice",
+          "content": "以下哪些是有效的 CSS position 属性值？（多选）",
+          "options": [
+            {
+              "key": "A",
+              "text": "static"
+            },
+            {
+              "key": "B",
+              "text": "relative"
+            },
+            {
+              "key": "C",
+              "text": "dynamic"
+            },
+            {
+              "key": "D",
+              "text": "absolute"
+            }
+          ],
+          "answer": {
+            "correct_option_keys": [
+              "A",
+              "B",
+              "D"
+            ]
+          },
+          "explanation": "'dynamic' 不是标准的 CSS position 属性值。"
+        },
+        {
+          "id": "q3",
+          "type": "true_false",
+          "content": "在 TypeScript 中，'any' 和 'unknown' 是完全相同的类型。",
+          "answer": {
+            "correct_boolean": false
+          },
+          "explanation": "不对。'unknown' 是 'any' 的类型安全版本。在使用 'unknown' 类型的值之前，必须先进行类型收窄。"
+        },
+        {
+          "id": "q4",
+          "type": "fill_blank",
+          "content": "表示“未找到资源”的 HTTP 状态码是多少？",
+          "answer": {
+            "expected_answers": [
+              "404",
+              "404 Not Found"
+            ],
+            "llm_grading": false
+          }
+        },
+        {
+          "id": "q5",
+          "type": "fill_blank",
+          "content": "简要解释为什么 React 的虚拟 DOM（Virtual DOM）比直接操作真实 DOM 更快？",
+          "answer": {
+            "expected_answers": [],
+            "llm_grading": true
+          },
+          "explanation": "虚拟 DOM 通过将多次更新批量处理，并使用 Diff 算法计算出最小变更集，从而减少了昂贵的浏览器重绘和回流。"
+        }
+      ]
+    },
+    {
+      "schema_version": "2.0",
+      "id": "kmg_section7_objects_classes_qb_v2_20260105_001",
+      "title": "第七节：对象属性与 ES6 类（读代码理解）21题（V2）",
+      "description": "覆盖：对象与类型判断、own vs 原型链属性、属性描述符（writable/enumerable/configurable）、遍历差异（Object.keys / for...in / getOwnPropertyNames / getOwnPropertySymbols）、构造函数原型方法 vs class 方法默认可枚举性、static、Symbol 键的枚举规则。侧重期末：读代码判输出/判能否枚举/判属性特性。",
+      "tags": [
+        "JAVASCRIPT",
+        "OBJECT",
+        "PROPERTY",
+        "DESCRIPTOR",
+        "CLASS",
+        "EXAM",
+        "CODE-READING"
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "single_choice",
+          "content": "判断下列哪一项 **不是对象**（按本节口径）？",
+          "options": [
+            {
+              "key": "A",
+              "text": "[1, 2]"
+            },
+            {
+              "key": "B",
+              "text": "(() => {})"
+            },
+            {
+              "key": "C",
+              "text": "{ a: 1 }"
+            },
+            {
+              "key": "D",
+              "text": "\"hi\""
+            }
+          ],
+          "answer": {
+            "correct_option_key": "D"
+          },
+          "explanation": "本节口径：除 `string/number/boolean/bigint/symbol/null/undefined` 外，其他（如数组、函数、对象字面量）都算对象。",
+          "tags": [
+            "type",
+            "object-basics"
+          ]
+        },
+        {
+          "id": "q2",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nconsole.log(typeof null)\n```\n\n输出是什么？",
+          "options": [
+            {
+              "key": "A",
+              "text": "\"null\""
+            },
+            {
+              "key": "B",
+              "text": "\"object\""
+            },
+            {
+              "key": "C",
+              "text": "\"undefined\""
+            },
+            {
+              "key": "D",
+              "text": "\"number\""
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "`typeof null === \"object\"` 是历史遗留坑；但 `null` 本身不是对象。",
+          "tags": [
+            "typeof",
+            "pitfall"
+          ]
+        },
+        {
+          "id": "q3",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nconst obj = { x: 1 };\nconsole.log(obj.toString);\n```\n\n`obj.toString` 属于哪一类属性？",
+          "options": [
+            {
+              "key": "A",
+              "text": "自有属性（own property）"
+            },
+            {
+              "key": "B",
+              "text": "继承属性（来自原型链）"
+            },
+            {
+              "key": "C",
+              "text": "Symbol 属性"
+            },
+            {
+              "key": "D",
+              "text": "不存在（undefined）"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "`toString` 通常来自 `Object.prototype`，属于继承属性。",
+          "tags": [
+            "prototype",
+            "inheritance"
+          ]
+        },
+        {
+          "id": "q4",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nconst proto = { inherited: 1 };\nconst obj = Object.create(proto);\nobj.own = 2;\nconsole.log(Object.keys(obj));\n```\n\n输出是什么？",
+          "options": [
+            {
+              "key": "A",
+              "text": "[\"own\", \"inherited\"]"
+            },
+            {
+              "key": "B",
+              "text": "[\"inherited\"]"
+            },
+            {
+              "key": "C",
+              "text": "[\"own\"]"
+            },
+            {
+              "key": "D",
+              "text": "[]"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "C"
+          },
+          "explanation": "`Object.keys` 只返回：**自有 + 可枚举 + 字符串键**。",
+          "tags": [
+            "enumeration",
+            "Object.keys"
+          ]
+        },
+        {
+          "id": "q5",
+          "type": "single_choice",
+          "content": "承接上一题，假设 `proto.inherited` 是可枚举的：\n\n```js\nfor (const k in obj) {\n  console.log(k);\n}\n```\n\n会打印哪些 key？",
+          "options": [
+            {
+              "key": "A",
+              "text": "只打印 own"
+            },
+            {
+              "key": "B",
+              "text": "只打印 inherited"
+            },
+            {
+              "key": "C",
+              "text": "打印 own 和 inherited"
+            },
+            {
+              "key": "D",
+              "text": "都不打印"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "C"
+          },
+          "explanation": "`for...in` 会枚举：**自有 + 原型链上** 的可枚举字符串键（不含 Symbol）。",
+          "tags": [
+            "enumeration",
+            "for-in"
+          ]
+        },
+        {
+          "id": "q6",
+          "type": "single_choice",
+          "content": "关于属性特性 `writable / enumerable / configurable`，哪项描述正确？",
+          "options": [
+            {
+              "key": "A",
+              "text": "writable 控制能否被 delete 删除"
+            },
+            {
+              "key": "B",
+              "text": "enumerable 控制会不会被 for...in / Object.keys 枚举到"
+            },
+            {
+              "key": "C",
+              "text": "configurable 控制能否修改属性的值"
+            },
+            {
+              "key": "D",
+              "text": "三者都只影响 Object.keys，不影响 for...in"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "`writable` 管能否改值；`enumerable` 管能否被枚举；`configurable` 管能否 delete/改描述符等。",
+          "tags": [
+            "descriptor"
+          ]
+        },
+        {
+          "id": "q7",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nconst obj = {};\nobj.x = 1;\n```\n\n像这样“普通赋值创建”的属性，默认描述符最符合哪项？",
+          "options": [
+            {
+              "key": "A",
+              "text": "writable:true enumerable:true configurable:true"
+            },
+            {
+              "key": "B",
+              "text": "writable:false enumerable:false configurable:false"
+            },
+            {
+              "key": "C",
+              "text": "writable:true enumerable:false configurable:true"
+            },
+            {
+              "key": "D",
+              "text": "writable:false enumerable:true configurable:false"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "A"
+          },
+          "explanation": "普通方式添加的自有属性，默认三项都为 `true`。",
+          "tags": [
+            "descriptor",
+            "default"
+          ]
+        },
+        {
+          "id": "q8",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nconst obj = {};\nObject.defineProperty(obj, \"y\", { value: 2 });\n```\n\n下面哪个最符合 `obj.y` 的默认特性？",
+          "options": [
+            {
+              "key": "A",
+              "text": "writable:true enumerable:true configurable:true"
+            },
+            {
+              "key": "B",
+              "text": "writable:false enumerable:false configurable:false"
+            },
+            {
+              "key": "C",
+              "text": "writable:true enumerable:false configurable:false"
+            },
+            {
+              "key": "D",
+              "text": "writable:false enumerable:true configurable:true"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "`defineProperty` 没写的描述符默认是 `false`（常考坑）。",
+          "tags": [
+            "defineProperty",
+            "pitfall"
+          ]
+        },
+        {
+          "id": "q9",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nconst obj = { x: 1 };\nObject.defineProperty(obj, \"y\", { value: 2, enumerable: false });\nconsole.log(Object.keys(obj));\n```\n\n输出是什么？",
+          "options": [
+            {
+              "key": "A",
+              "text": "[\"x\", \"y\"]"
+            },
+            {
+              "key": "B",
+              "text": "[\"y\"]"
+            },
+            {
+              "key": "C",
+              "text": "[\"x\"]"
+            },
+            {
+              "key": "D",
+              "text": "[]"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "C"
+          },
+          "explanation": "`y` 不可枚举，所以 `Object.keys` 只返回 `x`。",
+          "tags": [
+            "enumerable",
+            "Object.keys"
+          ]
+        },
+        {
+          "id": "q10",
+          "type": "single_choice",
+          "content": "下列哪个 API 能返回对象 **自有的字符串键**（包含不可枚举属性名）？",
+          "options": [
+            {
+              "key": "A",
+              "text": "Object.keys(obj)"
+            },
+            {
+              "key": "B",
+              "text": "for...in"
+            },
+            {
+              "key": "C",
+              "text": "Object.getOwnPropertyNames(obj)"
+            },
+            {
+              "key": "D",
+              "text": "Object.getOwnPropertySymbols(obj)"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "C"
+          },
+          "explanation": "`getOwnPropertyNames`：自有 + 字符串键（包含不可枚举）。",
+          "tags": [
+            "reflection"
+          ]
+        },
+        {
+          "id": "q11",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nfunction Person(name){ this.name = name; }\nPerson.prototype.sayHi = function(){};\n```\n\n`Person.prototype` 上的 `sayHi` 默认 `enumerable` 是？",
+          "options": [
+            {
+              "key": "A",
+              "text": "true"
+            },
+            {
+              "key": "B",
+              "text": "false"
+            },
+            {
+              "key": "C",
+              "text": "undefined"
+            },
+            {
+              "key": "D",
+              "text": "取决于严格模式"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "A"
+          },
+          "explanation": "用赋值 `prototype.sayHi = ...` 加的方法默认可枚举（enumerable:true）。",
+          "tags": [
+            "prototype",
+            "enumerable"
+          ]
+        },
+        {
+          "id": "q12",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nclass Person {\n  constructor(name){ this.name = name; }\n  sayHi() {}\n  static createGuest(){ return new Person(\"Guest\"); }\n}\n```\n\n`Person.prototype` 上的 `sayHi` 默认 `enumerable` 是？",
+          "options": [
+            {
+              "key": "A",
+              "text": "true"
+            },
+            {
+              "key": "B",
+              "text": "false"
+            },
+            {
+              "key": "C",
+              "text": "undefined"
+            },
+            {
+              "key": "D",
+              "text": "会抛错，class 不用 prototype"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "类体里定义的方法（原型方法/静态方法）默认不可枚举（enumerable:false）。",
+          "tags": [
+            "class",
+            "enumerable"
+          ]
+        },
+        {
+          "id": "q13",
+          "type": "single_choice",
+          "content": "承接上一题：`createGuest` 这个方法放在哪里？",
+          "options": [
+            {
+              "key": "A",
+              "text": "Person.prototype.createGuest"
+            },
+            {
+              "key": "B",
+              "text": "每个实例 p 上：p.createGuest"
+            },
+            {
+              "key": "C",
+              "text": "Person.createGuest"
+            },
+            {
+              "key": "D",
+              "text": "Object.prototype.createGuest"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "C"
+          },
+          "explanation": "`static` 方法挂在构造函数本身：`Person.createGuest`。",
+          "tags": [
+            "class",
+            "static"
+          ]
+        },
+        {
+          "id": "q14",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nclass Person { sayHi(){} }\nconsole.log(typeof Person);\n```\n\n输出是什么？",
+          "options": [
+            {
+              "key": "A",
+              "text": "\"class\""
+            },
+            {
+              "key": "B",
+              "text": "\"object\""
+            },
+            {
+              "key": "C",
+              "text": "\"function\""
+            },
+            {
+              "key": "D",
+              "text": "\"prototype\""
+            }
+          ],
+          "answer": {
+            "correct_option_key": "C"
+          },
+          "explanation": "`class` 本质仍是函数（构造函数）。",
+          "tags": [
+            "class",
+            "typeof"
+          ]
+        },
+        {
+          "id": "q15",
+          "type": "single_choice",
+          "content": "代码：\n\n```js\nclass Person { sayHi(){} }\nconsole.log(Object.keys(Person.prototype));\n```\n\n输出最可能是？",
+          "options": [
+            {
+              "key": "A",
+              "text": "[\"sayHi\"]"
+            },
+            {
+              "key": "B",
+              "text": "[]"
+            },
+            {
+              "key": "C",
+              "text": "[\"constructor\",\"sayHi\"]"
+            },
+            {
+              "key": "D",
+              "text": "报错"
+            }
+          ],
+          "answer": {
+            "correct_option_key": "B"
+          },
+          "explanation": "类方法默认不可枚举，所以 `Object.keys(Person.prototype)` 通常为空数组。",
+          "tags": [
+            "class",
+            "Object.keys",
+            "enumerable"
+          ]
+        },
+        {
+          "id": "q16",
+          "type": "true_false",
+          "content": "判断题：`for...in` 会枚举对象 **自有 + 继承** 的可枚举属性（不包含 Symbol 属性）。",
+          "answer": {
+            "correct_boolean": true
+          },
+          "explanation": "`for...in` 会沿原型链向上枚举可枚举的字符串键；Symbol 键不在其内。",
+          "tags": [
+            "for-in",
+            "enumeration"
+          ]
+        },
+        {
+          "id": "q17",
+          "type": "true_false",
+          "content": "判断题：`Object.keys(obj)` 会返回 `obj` 的所有自有属性（包括不可枚举）。",
+          "answer": {
+            "correct_boolean": false
+          },
+          "explanation": "`Object.keys` 只返回自有且 `enumerable:true` 的字符串键；不可枚举不会出现。",
+          "tags": [
+            "Object.keys",
+            "enumerable"
+          ]
+        },
+        {
+          "id": "q18",
+          "type": "true_false",
+          "content": "判断题：ES6 `class`（基础语法本身）提供了真正的“私有字段”，外部一定访问不到。",
+          "answer": {
+            "correct_boolean": false
+          },
+          "explanation": "基础 ES6 class 字段默认公有；真正私有要靠闭包或 `#private`（较新语法）。",
+          "tags": [
+            "class",
+            "privacy"
+          ]
+        },
+        {
+          "id": "q19",
+          "type": "true_false",
+          "content": "判断题：Symbol 作为属性键时，`Object.keys` 和 `for...in` 都不会枚举到它。",
+          "answer": {
+            "correct_boolean": true
+          },
+          "explanation": "Symbol 键不参与常规字符串键枚举；需要 `Object.getOwnPropertySymbols` 获取。",
+          "tags": [
+            "symbol",
+            "enumeration"
+          ]
+        },
+        {
+          "id": "q20",
+          "type": "fill_blank",
+          "content": "填空题：对象属性除了 key 和 value，还有三个常见特性：`writable`、`enumerable`、`configurable`。其中“可枚举”对应的特性名是（____）。",
+          "answer": {
+            "expected_answers": [
+              "enumerable"
+            ],
+            "llm_grading": true
+          },
+          "explanation": "可枚举属性就是 `enumerable:true` 的属性。",
+          "tags": [
+            "descriptor",
+            "fill-blank"
+          ]
+        },
+        {
+          "id": "q21",
+          "type": "fill_blank",
+          "content": "填空题：类体中定义的方法（原型方法/静态方法）默认都是（____）枚举的（填“可/不可”）。",
+          "answer": {
+            "expected_answers": [
+              "不可"
+            ],
+            "llm_grading": true
+          },
+          "explanation": "`class` 方法默认 `enumerable:false`，所以通常不会被 `Object.keys` / `for...in` 枚举到。",
+          "tags": [
+            "class",
+            "enumerable",
+            "fill-blank"
+          ]
+        }
+      ],
+      "created_at": 1767571200000
+    }
+  ],
+  "qb_theme_mode": "light",
+  "qb_sessions": [
+    {
+      "id": "1034a178-3eac-467f-9a4e-a1007f9c5636",
+      "bankId": "sample_001",
+      "startTime": 1767576262359,
+      "endTime": 1767576270296,
+      "responses": {
+        "q1": {
+          "questionId": "q1",
+          "userAnswer": "C",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767576256160,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q2": {
+          "questionId": "q2",
+          "userAnswer": [
+            "C"
+          ],
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767576258292,
+          "isAiGraded": false,
+          "isFlagged": true
+        },
+        "q3": {
+          "questionId": "q3",
+          "userAnswer": false,
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767576260892,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q4": {
+          "questionId": "q4",
+          "userAnswer": "777",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767576266094,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q5": {
+          "questionId": "q5",
+          "userAnswer": "8",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767576267909,
+          "isAiGraded": true,
+          "isFlagged": false,
+          "feedback": "回答不完整，未解释虚拟DOM更快的原理。"
+        }
+      },
+      "totalScore": 20
+    },
+    {
+      "id": "e1f0c39c-7833-4732-97f8-3f95eec5f56b",
+      "bankId": "sample_001",
+      "startTime": 1767575474714,
+      "endTime": 1767575500883,
+      "responses": {
+        "q1": {
+          "questionId": "q1",
+          "userAnswer": "B",
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767575475762,
+          "isAiGraded": false,
+          "isFlagged": false,
+          "annotation": "ok",
+          "chatHistory": [
+            {
+              "role": "model",
+              "text": "你好！我是你的AI 助教。我看这道题你答对了，真棒！。关于这道题的 **知识点**，你有什么想问的吗？",
+              "timestamp": 1767575485364
+            }
+          ]
+        },
+        "q2": {
+          "questionId": "q2",
+          "userAnswer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767575478278,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q3": {
+          "questionId": "q3",
+          "userAnswer": false,
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767575479946,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q4": {
+          "questionId": "q4",
+          "userAnswer": "404",
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767575492528,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q5": {
+          "questionId": "q5",
+          "userAnswer": "4",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767575498313,
+          "isAiGraded": true,
+          "isFlagged": false,
+          "feedback": "回答不完整，未解释虚拟 DOM 更快的原理。"
+        }
+      },
+      "totalScore": 80
+    },
+    {
+      "id": "a770c7cb-5496-4b31-a239-bbea981857ec",
+      "bankId": "sample_001",
+      "startTime": 1767575166847,
+      "endTime": 1767575218300,
+      "responses": {
+        "q1": {
+          "questionId": "q1",
+          "userAnswer": "B",
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767575168113,
+          "isAiGraded": false,
+          "isFlagged": false,
+          "annotation": "ok",
+          "chatHistory": [
+            {
+              "role": "model",
+              "text": "你好！我是你的AI 助教。我看这道题你答对了，真棒！。关于这道题的 **知识点**，你有什么想问的吗？",
+              "timestamp": 1767575228864
+            }
+          ]
+        },
+        "q2": {
+          "questionId": "q2",
+          "userAnswer": [
+            "B"
+          ],
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767575169613,
+          "isAiGraded": false,
+          "isFlagged": false,
+          "chatHistory": [
+            {
+              "role": "user",
+              "text": "这题怎么做",
+              "timestamp": 1767575189381
+            },
+            {
+              "role": "model",
+              "text": "这题问的是“哪些是有效的 CSS position 属性值”，并且是多选题。\n\n我们先回顾一下 CSS 中 `position` 属性的标准值：\n\n*   **`static`**：默认值，元素按照正常的文档流排列。\n*   **`relative`**：相对定位，元素相对于其正常位置进行偏移。\n*   **`absolute`**：绝对定位，元素相对于最近的非 `static` 定位的祖先元素进行定位。\n*   **`fixed`**：固定定位，元素相对于浏览器窗口进行定位。\n*   **`sticky`**：粘性定位，元素在跨越特定阈值前为相对定位，之后为固定定位。\n\n所以，有效的值就是以上这些。题目中如果出现了像 `dynamic` 这样的选项，它并不是 CSS 的标准属性值，因此是无效的。\n\n**解题小技巧**：\n做这类题时，可以快速在脑海里过一遍这几个标准值。只要选项不在这五个标准值之内，通常就是无效的。你之前选了 `[\"B\"]`，说明可能只选中了一个正确选项，而题目要求选出“所有”有效的值，所以漏选了。\n\n别担心，记住这五个关键词（static, relative, absolute, fixed, sticky），下次再遇到这类题就稳了！继续加油！",
+              "timestamp": 1767575199949
+            }
+          ]
+        },
+        "q3": {
+          "questionId": "q3",
+          "userAnswer": false,
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767575209596,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q4": {
+          "questionId": "q4",
+          "userAnswer": "5",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767575212146,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q5": {
+          "questionId": "q5",
+          "userAnswer": "7",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767575216013,
+          "isAiGraded": true,
+          "isFlagged": false,
+          "feedback": "回答不完整，未解释虚拟DOM的优势。"
+        }
+      },
+      "totalScore": 40
+    },
+    {
+      "id": "f4a04aa6-aca7-4e72-84b9-7198e696b9a7",
+      "bankId": "sample_001",
+      "startTime": 1767574827297,
+      "endTime": 1767574876081,
+      "responses": {
+        "q1": {
+          "questionId": "q1",
+          "userAnswer": "B",
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767574828747,
+          "isAiGraded": false,
+          "isFlagged": false,
+          "annotation": "3",
+          "chatHistory": [
+            {
+              "role": "model",
+              "text": "你好！我是你的AI 助教。我看这道题你答对了，真棒！。关于这道题的 **知识点**，你有什么想问的吗？",
+              "timestamp": 1767575041380
+            }
+          ]
+        },
+        "q2": {
+          "questionId": "q2",
+          "userAnswer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767574831447,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q3": {
+          "questionId": "q3",
+          "userAnswer": false,
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767574832931,
+          "isAiGraded": false,
+          "isFlagged": false,
+          "annotation": "3"
+        },
+        "q4": {
+          "questionId": "q4",
+          "userAnswer": "404",
+          "isCorrect": true,
+          "score": 1,
+          "timestamp": 1767574872015,
+          "isAiGraded": false,
+          "isFlagged": false
+        },
+        "q5": {
+          "questionId": "q5",
+          "userAnswer": "4",
+          "isCorrect": false,
+          "score": 0,
+          "timestamp": 1767574873631,
+          "isAiGraded": true,
+          "isFlagged": false,
+          "feedback": "回答不完整，未解释虚拟 DOM 的优势。",
+          "chatHistory": []
+        }
+      },
+      "totalScore": 80
+    }
+  ],
+  "qb_api_key": "sk-f2f608dcea9f45878f4c9ecaec62b511",
+  "qb_progress_kmg_section7_objects_classes_qb_v2_20260105_001": {
+    "currentIndex": 4,
+    "answers": {
+      "q1": {
+        "questionId": "q1",
+        "userAnswer": "A",
+        "isCorrect": false,
+        "score": 0,
+        "timestamp": 1767576979707,
+        "isAiGraded": false,
+        "isFlagged": false
+      },
+      "q2": {
+        "questionId": "q2",
+        "userAnswer": "B",
+        "isCorrect": true,
+        "score": 1,
+        "timestamp": 1767576998274,
+        "isAiGraded": false,
+        "isFlagged": false
+      },
+      "q3": {
+        "questionId": "q3",
+        "userAnswer": "B",
+        "isCorrect": true,
+        "score": 1,
+        "timestamp": 1767577003673,
+        "isAiGraded": false,
+        "isFlagged": false
+      },
+      "q4": {
+        "questionId": "q4",
+        "userAnswer": "C",
+        "isCorrect": true,
+        "score": 1,
+        "timestamp": 1767577005524,
+        "isAiGraded": false,
+        "isFlagged": false
+      }
+    },
+    "lastUpdated": 1767577005526
+  },
+  "qb_progress_sample_001": {
+    "currentIndex": 2,
+    "answers": {
+      "q1": {
+        "questionId": "q1",
+        "userAnswer": "D",
+        "isCorrect": false,
+        "score": 0,
+        "timestamp": 1767589406845,
+        "isAiGraded": false,
+        "isFlagged": false
+      },
+      "q2": {
+        "questionId": "q2",
+        "userAnswer": [
+          "C"
+        ],
+        "isCorrect": false,
+        "score": 0,
+        "timestamp": 1767589408028,
+        "isAiGraded": false,
+        "isFlagged": false
+      }
+    },
+    "lastUpdated": 1767599025781
+  }
+}
