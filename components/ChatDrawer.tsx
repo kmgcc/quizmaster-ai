@@ -43,7 +43,6 @@ interface Props {
   onClose: () => void;
   question: Question;
   userResponse: UserResponse;
-  themeColor: string;
   aiSettings?: AISettings;
   inline?: boolean;
   onChatHistoryUpdate?: (questionId: string, history: ChatMessage[]) => void;
@@ -103,7 +102,15 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
             }
             
             return (
-              <code className="bg-slate-100 dark:bg-slate-700 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 font-mono text-xs mx-0.5" {...props}>
+              <code 
+                className="px-1.5 py-0.5 rounded border font-mono text-xs mx-0.5" 
+                style={{
+                  backgroundColor: 'var(--surface2)',
+                  color: 'var(--tertiary)',
+                  borderColor: 'var(--outline)',
+                }}
+                {...props}
+              >
                 {children}
               </code>
             );
@@ -112,12 +119,16 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
           table({ node, ...props }: any) {
             return (
               <div className="my-3 overflow-x-auto">
-                <table className="min-w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" {...props} />
+                <table 
+                  className="min-w-full text-sm border rounded-lg overflow-hidden" 
+                  style={{ borderColor: 'var(--outline)' }}
+                  {...props} 
+                />
               </div>
             );
           },
           thead({ ...props }: any) {
-            return <thead className="bg-slate-50 dark:bg-slate-800/60" {...props} />;
+            return <thead style={{ backgroundColor: 'var(--surface2)' }} {...props} />;
           },
           tbody({ ...props }: any) {
             return <tbody {...props} />;
@@ -125,7 +136,11 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
           tr({ children, ...props }: any) {
             return (
               <tr 
-                className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 even:bg-slate-50/40 dark:even:bg-slate-800/30"
+                className="border-t"
+                style={{
+                  borderColor: 'var(--outline)',
+                  backgroundColor: 'var(--surface)',
+                }}
                 {...props}
               >
                 {children}
@@ -135,7 +150,11 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
           th({ children, ...props }: any) {
             return (
               <th 
-                className="px-3 py-2 text-left font-semibold border-b border-slate-200 dark:border-slate-700 whitespace-nowrap text-slate-900 dark:text-slate-100"
+                className="px-3 py-2 text-left font-semibold border-b whitespace-nowrap"
+                style={{
+                  borderColor: 'var(--outline)',
+                  color: 'var(--text)',
+                }}
                 {...props}
               >
                 {children}
@@ -145,7 +164,11 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
           td({ children, ...props }: any) {
             return (
               <td 
-                className="px-3 py-2 border-t border-slate-200 dark:border-slate-700 align-top text-slate-700 dark:text-slate-300"
+                className="px-3 py-2 border-t align-top"
+                style={{
+                  borderColor: 'var(--outline)',
+                  color: 'var(--text)',
+                }}
                 {...props}
               >
                 {children}
@@ -157,7 +180,7 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
             return <p className="mb-2 leading-relaxed">{children}</p>;
           },
           h1({ children }: any) {
-            return <h1 className="text-2xl font-bold mt-4 mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">{children}</h1>;
+            return <h1 className="text-2xl font-bold mt-4 mb-2 pb-2 border-b" style={{ borderColor: 'var(--outline)', color: 'var(--text)' }}>{children}</h1>;
           },
           h2({ children }: any) {
             return <h2 className="text-xl font-bold mt-4 mb-2">{children}</h2>;
@@ -170,10 +193,17 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
           },
           blockquote({ children }: any) {
             return (
-              <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-4 py-1 my-2 text-slate-600 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-800 rounded-r">
+              <blockquote 
+                className="border-l-4 pl-4 py-1 my-2 italic rounded-r"
+                style={{
+                  borderColor: 'var(--outline)',
+                  color: 'var(--muted)',
+                  backgroundColor: 'var(--surface2)',
+                }}
+              >
                 {children}
-         </blockquote>
-       );
+              </blockquote>
+            );
           },
           ul({ children }: any) {
             return <ul className="list-disc list-inside my-2 space-y-1">{children}</ul>;
@@ -185,7 +215,7 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
             return <li className="leading-relaxed">{children}</li>;
           },
           hr() {
-            return <hr className="my-6 border-slate-200 dark:border-slate-700" />;
+            return <hr className="my-6" style={{ borderColor: 'var(--outline)' }} />;
           }
         }}
       >
@@ -199,7 +229,7 @@ const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
 const AIMessage: React.FC<{ text: string; status?: 'streaming' | 'done' | 'error' }> = ({ text, status }) => {
   if (status === 'error') {
     return (
-      <div className="text-sm text-red-600 dark:text-red-400">
+      <div className="text-sm" style={{ color: 'var(--danger)' }}>
         {text || 'AI 回复失败'}
       </div>
     );
@@ -214,7 +244,6 @@ export const ChatDrawer: React.FC<Props> = ({
   onClose, 
   question, 
   userResponse, 
-  themeColor, 
   aiSettings, 
   inline = false, 
   onChatHistoryUpdate,
@@ -517,12 +546,18 @@ export const ChatDrawer: React.FC<Props> = ({
   const renderPanelContent = () => (
     <>
       {/* Header - Absolute overlay with glassmorphism */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-4 border-b border-slate-100/50 dark:border-white/10 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-slate-900/30">
+      <div 
+        className="absolute top-0 left-0 right-0 z-20 p-4 border-b flex justify-between items-center backdrop-blur-md"
+        style={{
+          borderColor: 'var(--outline)',
+          backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.3)',
+        }}
+      >
         <div>
-          <h3 className="font-bold text-slate-800 dark:text-slate-100">
+          <h3 className="font-bold" style={{ color: 'var(--text)' }}>
             {aiSettings?.roleName || 'AI 助教'}
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>
             正在讨论第 {question.id} 题
           </p>
         </div>
@@ -530,7 +565,16 @@ export const ChatDrawer: React.FC<Props> = ({
           {history.length > 0 && (
             <button 
               onClick={clearChatHistory} 
-              className="p-2 rounded-full transition hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-400 hover:text-red-500"
+              className="p-2 rounded-full transition"
+              style={{ color: 'var(--muted)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--danger)';
+                e.currentTarget.style.backgroundColor = 'var(--surface2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--muted)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
               title="清除聊天记录"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -540,7 +584,16 @@ export const ChatDrawer: React.FC<Props> = ({
           )}
           <button 
             onClick={onClose} 
-            className="p-2 rounded-full transition hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-400"
+            className="p-2 rounded-full transition"
+            style={{ color: 'var(--muted)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text)';
+              e.currentTarget.style.backgroundColor = 'var(--surface2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--muted)';
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -552,19 +605,32 @@ export const ChatDrawer: React.FC<Props> = ({
       {/* Messages - Scrollable area with padding to avoid header/footer */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950 transition-colors z-0"
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 transition-colors z-0"
         style={{
           paddingTop: '72px',
-          paddingBottom: '180px'
+          paddingBottom: '180px',
+          backgroundColor: 'var(--surface2)',
         }}
       >
         {history.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[92%] rounded-2xl p-3 text-sm shadow-sm ${
-              msg.role === 'user' 
-                ? `bg-${themeColor}-600 text-white rounded-br-none` 
-                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none'
-            }`}>
+            <div 
+              className={`max-w-[92%] rounded-2xl p-3 text-sm shadow-sm ${
+                msg.role === 'user' 
+                  ? 'rounded-br-none' 
+                  : 'rounded-bl-none'
+              }`}
+              style={msg.role === 'user' ? {
+                backgroundColor: 'var(--primary)',
+                color: 'var(--on-primary)',
+              } : {
+                backgroundColor: 'var(--surface)',
+                color: 'var(--text)',
+                borderColor: 'var(--outline)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+              }}
+            >
               {msg.role === 'user' ? (
                 <UserMessage text={msg.text} />
               ) : (
@@ -573,7 +639,10 @@ export const ChatDrawer: React.FC<Props> = ({
                   {msg.status === 'error' && (
                     <button
                       onClick={retryLastMessage}
-                      className="mt-2 text-xs text-red-600 dark:text-red-400 hover:underline"
+                      className="mt-2 text-xs hover:underline transition"
+                      style={{ color: 'var(--danger)' }}
+                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
                       重试
                     </button>
@@ -585,10 +654,16 @@ export const ChatDrawer: React.FC<Props> = ({
         ))}
         {loading && history.length > 0 && history[history.length - 1].status !== 'streaming' && (
           <div className="flex justify-start">
-            <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-bl-none border border-slate-200 dark:border-slate-700 shadow-sm flex gap-1">
-              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100"></span>
-              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></span>
+            <div 
+              className="p-3 rounded-2xl rounded-bl-none border shadow-sm flex gap-1"
+              style={{
+                backgroundColor: 'var(--surface)',
+                borderColor: 'var(--outline)',
+              }}
+            >
+              <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--muted)' }}></span>
+              <span className="w-2 h-2 rounded-full animate-bounce delay-100" style={{ backgroundColor: 'var(--muted)' }}></span>
+              <span className="w-2 h-2 rounded-full animate-bounce delay-200" style={{ backgroundColor: 'var(--muted)' }}></span>
             </div>
           </div>
         )}
@@ -596,25 +671,64 @@ export const ChatDrawer: React.FC<Props> = ({
       </div>
 
       {/* Footer - Absolute overlay with glassmorphism (includes preset prompts and input) */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 p-4 border-t border-slate-100/50 dark:border-white/10 backdrop-blur-md bg-white/30 dark:bg-slate-900/30">
+      <div 
+        className="absolute bottom-0 left-0 right-0 z-20 p-4 border-t backdrop-blur-md"
+        style={{
+          borderColor: 'var(--outline)',
+          backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.3)',
+        }}
+      >
         {/* Preset Prompts */}
         {!loading && (
           <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
             <button 
               onClick={() => sendMessage("这题怎么做？")}
-              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-${themeColor}-50 dark:bg-${themeColor}-900/30 text-${themeColor}-600 dark:text-${themeColor}-300 border border-${themeColor}-100 dark:border-${themeColor}-800 hover:bg-${themeColor}-100 dark:hover:bg-${themeColor}-900/50 transition`}
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition"
+              style={{
+                backgroundColor: 'var(--primary-container)',
+                color: 'var(--on-primary-container)',
+                borderColor: 'var(--primary)',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-container)'}
             >
               ✨ 这题怎么做？
             </button>
             <button 
               onClick={() => sendMessage("请解释一下这个知识点")}
-              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition"
+              style={{
+                backgroundColor: 'var(--surface2)',
+                color: 'var(--text)',
+                borderColor: 'var(--outline)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                e.currentTarget.style.borderColor = 'var(--outline)';
+              }}
             >
               📖 解释知识点
             </button>
             <button 
               onClick={() => sendMessage("给一个相关的代码示例")}
-              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition"
+              style={{
+                backgroundColor: 'var(--surface2)',
+                color: 'var(--text)',
+                borderColor: 'var(--outline)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                e.currentTarget.style.borderColor = 'var(--outline)';
+              }}
             >
               💻 代码示例
             </button>
@@ -633,8 +747,14 @@ export const ChatDrawer: React.FC<Props> = ({
             placeholder="输入消息... (点击按钮发送，Shift+Enter 换行)"
             disabled={loading}
             rows={1}
-            className={`flex-1 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-${themeColor}-500 transition-colors bg-white dark:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px]`}
-            style={{ height: 'auto' }}
+            className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px]"
+            style={{
+              borderColor: 'var(--outline)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text)',
+            }}
+            onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ring)'}
+            onBlur={(e) => e.currentTarget.style.borderColor = 'var(--outline)'}
           />
           <button 
             onClick={() => {
@@ -644,7 +764,22 @@ export const ChatDrawer: React.FC<Props> = ({
               }
             }}
             disabled={loading || !input.trim()}
-            className={`bg-${themeColor}-600 hover:bg-${themeColor}-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white p-2 rounded-lg transition shrink-0`}
+            className="p-2 rounded-lg transition shrink-0"
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'var(--on-primary)',
+              opacity: (loading || !input.trim()) ? 0.5 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!loading && input.trim()) {
+                e.currentTarget.style.opacity = '0.9';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading && input.trim()) {
+                e.currentTarget.style.opacity = '1';
+              }
+            }}
           >
             <svg className="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
@@ -660,13 +795,15 @@ export const ChatDrawer: React.FC<Props> = ({
   if (isOpen && isWide && !inline) {
     const dockPanel = (
       <div 
-        className="relative w-[480px] flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 transition-colors"
+        className="relative w-[480px] flex flex-col overflow-hidden rounded-2xl shadow-2xl border transition-colors"
         style={{
           position: 'fixed',
           right: '16px',
           top: 'calc(var(--topbar-h, 64px) + 16px)',
           bottom: '16px',
-          zIndex: 100
+          zIndex: 100,
+          backgroundColor: 'var(--surface)',
+          borderColor: 'var(--outline)',
         }}
       >
         {renderPanelContent()}
@@ -675,26 +812,24 @@ export const ChatDrawer: React.FC<Props> = ({
     return createPortal(dockPanel, document.body);
   }
 
-  // Render Overlay mode (<1100px): right-aligned with backdrop
+  // Render Overlay mode (<1100px): bottom-centered with backdrop (bottom-sheet style)
   // Only allowed when NOT wide (width < 1100px)
-  // Panel width limited to leave at least 96px on left side for question content visibility
+  // Panel positioned at bottom center, leaving top content visible
   const overlayPanel = (
-    <div className="fixed inset-0 z-50 flex items-start justify-end p-3">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-3">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/25"
         onClick={onClose}
       />
-      {/* Panel - Right aligned, width limited to show left content */}
+      {/* Panel - Bottom centered, width and height limited */}
       <div 
-        className="relative flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 transition-colors"
+        className="relative flex flex-col overflow-hidden rounded-2xl shadow-2xl border transition-colors mb-3"
         style={{
-          position: 'fixed',
-          right: '12px',
-          top: 'calc(var(--topbar-h, 64px) + 16px)',
-          bottom: '16px',
-          width: `min(${DOCK_W}px, calc(100vw - 96px))`,
-          maxHeight: 'calc(100vh - var(--topbar-h, 64px) - 120px)'
+          width: `min(${DOCK_W}px, calc(100vw - 24px))`,
+          maxHeight: `min(70vh, calc(100vh - var(--topbar-h, 64px) - 24px))`,
+          backgroundColor: 'var(--surface)',
+          borderColor: 'var(--outline)',
         }}
       >
         {renderPanelContent()}

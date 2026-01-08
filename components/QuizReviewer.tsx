@@ -57,13 +57,21 @@ const renderMarkdownText = (text: string): React.ReactNode => {
     return inlineParts.map((part, i) => {
       if (part.startsWith('`') && part.endsWith('`')) {
         return (
-          <code key={`${key}-${i}`} className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded text-xs font-mono border border-amber-200 dark:border-amber-800">
+          <code 
+            key={`${key}-${i}`} 
+            className="px-1.5 py-0.5 rounded text-xs font-mono border"
+            style={{
+              backgroundColor: 'var(--tertiary-container)',
+              color: 'var(--on-tertiary-container)',
+              borderColor: 'var(--outline)',
+            }}
+          >
             {part.slice(1, -1)}
           </code>
         );
       }
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={`${key}-${i}`} className="font-bold text-slate-900 dark:text-white">{part.slice(2, -2)}</strong>;
+        return <strong key={`${key}-${i}`} className="font-bold" style={{ color: 'var(--text)' }}>{part.slice(2, -2)}</strong>;
       }
       return part;
     });
@@ -79,8 +87,22 @@ const renderMarkdownText = (text: string): React.ReactNode => {
     
     // Add code block with syntax highlighting
     parts.push(
-      <div key={`code-${blockIdx}`} className="my-2 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-[#1e1e1e] shadow-sm">
-        <div className="px-2 py-1 bg-[#252526] text-[10px] text-slate-400 border-b border-slate-700 font-bold uppercase flex justify-between items-center">
+      <div 
+        key={`code-${blockIdx}`} 
+        className="my-2 rounded-lg overflow-hidden border shadow-sm"
+        style={{
+          borderColor: 'var(--outline)',
+          backgroundColor: '#1e1e1e',
+        }}
+      >
+        <div 
+          className="px-2 py-1 text-[10px] border-b font-bold uppercase flex justify-between items-center"
+          style={{
+            backgroundColor: '#252526',
+            color: 'var(--muted)',
+            borderColor: 'var(--outline)',
+          }}
+        >
           <span>{block.lang || 'CODE'}</span>
           <div className="flex gap-1 opacity-40">
             <span className="w-1.5 h-1.5 rounded-full bg-[#ff5f56]"></span>
@@ -143,19 +165,63 @@ const AutoResizeTextarea: React.FC<{
   };
 
   return (
-    <textarea
-      ref={textareaRef}
-      value={value}
-      onChange={handleChange}
-      placeholder={placeholder}
-      className={`${className} break-words overflow-x-hidden`}
-      style={{ 
-        minHeight: '40px', 
-        maxHeight: `${maxHeight}px`,
-        overflowWrap: 'anywhere',
-        wordBreak: 'break-word'
-      }}
-    />
+    <>
+      <style>{`
+        /* 浅色模式：亮黄色（高饱和度，明亮不发灰） */
+        textarea[data-note-textarea],
+        textarea.note-textarea-fixed {
+          background-color: hsl(50, 90%, 95%) !important;
+          border: none !important;
+          color: hsl(35, 25%, 15%) !important;
+        }
+        textarea[data-note-textarea]::placeholder,
+        textarea.note-textarea-fixed::placeholder {
+          color: hsl(35, 15%, 45%) !important;
+          opacity: 0.7;
+        }
+        textarea[data-note-textarea]:focus,
+        textarea.note-textarea-fixed:focus {
+          background-color: hsl(50, 90%, 95%) !important;
+          border: none !important;
+          outline: none !important;
+          box-shadow: none !important;
+        }
+        
+        /* 深色模式：暗黄色偏橙色，低饱和（典雅不刺眼） */
+        .dark textarea[data-note-textarea],
+        .dark textarea.note-textarea-fixed {
+          background-color: hsl(38, 18%, 20%) !important;
+          border: none !important;
+          color: hsl(38, 16%, 85%) !important;
+        }
+        .dark textarea[data-note-textarea]::placeholder,
+        .dark textarea.note-textarea-fixed::placeholder {
+          color: hsl(38, 14%, 60%) !important;
+          opacity: 0.8;
+        }
+        .dark textarea[data-note-textarea]:focus,
+        .dark textarea.note-textarea-fixed:focus {
+          background-color: hsl(38, 18%, 20%) !important;
+          border: none !important;
+          outline: none !important;
+          box-shadow: none !important;
+        }
+      `}</style>
+      <textarea
+        ref={textareaRef}
+        data-note-textarea
+        value={value}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className={`${className} break-words overflow-x-hidden`}
+        style={{ 
+          minHeight: '40px', 
+          maxHeight: `${maxHeight}px`,
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word'
+        }}
+      />
+    </>
   );
 };
 
@@ -166,7 +232,6 @@ interface Props {
   onRetake: () => void;
   onExit: () => void;
   onContinue?: () => void; // For interim mode
-  themeColor: string;
   aiSettings?: AISettings;
   customQuestions?: Question[]; // For interim mode, only show specific questions
   isInterim?: boolean;
@@ -180,7 +245,6 @@ export const QuizReviewer: React.FC<Props> = ({
   onRetake, 
   onExit, 
   onContinue,
-  themeColor, 
   aiSettings, 
   customQuestions, 
   isInterim = false,
@@ -211,42 +275,56 @@ export const QuizReviewer: React.FC<Props> = ({
   const notesCount = questionsToRender.filter(q => session.responses[q.id]?.annotation).length;
 
   return (
-    <div className="flex gap-4 pb-4 w-full min-h-screen transition-all duration-500 min-w-0">
-      {/* Left Column: Summary */}
+    <div className="flex flex-col md:flex-row gap-4 w-full min-h-0 h-screen min-w-0 overflow-hidden">
+      {/* Left Column: Summary - Desktop Only (md+) */}
       {/* Logic: Hide this column completely when chat is open OR if in Interim Mode */}
       {!isChatOpen && !isInterim && (
-        <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-6 md:mr-8 md:sticky md:top-[calc(var(--topbar-h,64px)+16px)] md:self-start animate-fade-in mt-2">
+        <div className="hidden md:block md:w-72 lg:w-80 shrink-0 space-y-6 md:mr-8 md:sticky md:top-[calc(var(--topbar-h,64px)+8px)] md:self-start animate-fade-in">
             <div className="bg-white/45 dark:bg-white/5 p-8 rounded-3xl shadow-sm border border-black/5 dark:border-white/10 text-center relative overflow-hidden transition-colors backdrop-blur-md">
-                <div className={`absolute top-0 left-0 w-full h-2 bg-${themeColor}-500`}></div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">练习回顾</h2>
-                <p className="text-xs text-slate-400 mb-6">{new Date(session.startTime).toLocaleString()}</p>
+                <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: 'var(--primary)' }}></div>
+                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text)' }}>练习回顾</h2>
+                <p className="text-xs mb-6" style={{ color: 'var(--muted)' }}>{new Date(session.startTime).toLocaleString()}</p>
                 
-                <div className="relative w-40 h-40 mx-auto flex items-center justify-center rounded-full border-[12px] border-slate-100 dark:border-white/5">
-                    <svg className={`absolute top-0 left-0 w-full h-full transform -rotate-90 text-${score >= 60 ? (score >= 80 ? 'green' : 'yellow') : 'amber'}-500`} viewBox="0 0 100 100">
+                <div 
+                  className="relative w-40 h-40 mx-auto flex items-center justify-center rounded-full border-[12px]"
+                  style={{ borderColor: 'var(--surface2)' }}
+                >
+                    <svg 
+                      className="absolute top-0 left-0 w-full h-full transform -rotate-90" 
+                      style={{ 
+                        color: score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--warning)' : 'var(--warning)',
+                      }}
+                      viewBox="0 0 100 100"
+                    >
                         <circle cx="50" cy="50" r="44" stroke="currentColor" strokeWidth="12" fill="none" strokeDasharray={`${score * 2.76} 276`} />
                     </svg>
                     <div className="text-center">
-                        <div className={`text-4xl font-black ${score >= 80 ? 'text-green-500' : score >= 60 ? 'text-yellow-500' : 'text-amber-500'}`}>
+                        <div 
+                          className="text-4xl font-black"
+                          style={{ 
+                            color: score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--warning)' : 'var(--warning)',
+                          }}
+                        >
                         {score}
                         </div>
-                        <div className="text-xs text-slate-400 font-bold uppercase mt-1">分数</div>
+                        <div className="text-xs font-bold uppercase mt-1" style={{ color: 'var(--muted)' }}>分数</div>
                     </div>
                 </div>
 
                 <div className="mt-8 flex justify-center gap-8 text-center">
                     <div>
-                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{correctCount}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">答对</div>
+                        <div className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{correctCount}</div>
+                        <div className="text-xs" style={{ color: 'var(--muted)' }}>答对</div>
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totalQuestions}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">总题数</div>
+                        <div className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{totalQuestions}</div>
+                        <div className="text-xs" style={{ color: 'var(--muted)' }}>总题数</div>
                     </div>
                 </div>
                 
                 {notesCount > 0 && (
-                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
-                    <div className="flex items-center justify-center gap-2 text-yellow-600 dark:text-yellow-400">
+                  <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--outline)' }}>
+                    <div className="flex items-center justify-center gap-2" style={{ color: 'var(--warning)' }}>
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                       </svg>
@@ -257,10 +335,33 @@ export const QuizReviewer: React.FC<Props> = ({
             </div>
 
             <div className="space-y-3">
-                <button onClick={onRetake} className={`w-full px-6 py-3 bg-${themeColor}-600 text-white font-bold rounded-2xl hover:bg-${themeColor}-700 shadow-lg shadow-${themeColor}-200 dark:shadow-none transition`}>
+                <button 
+                  onClick={onRetake} 
+                  className="w-full px-6 py-3 font-bold rounded-2xl transition"
+                  style={{ 
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--on-primary)',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
                     再做一次
                 </button>
-                <button onClick={onExit} className="w-full px-6 py-3 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold rounded-2xl border border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10 transition">
+                <button 
+                  onClick={onExit} 
+                  className="w-full px-6 py-3 font-bold rounded-2xl border transition"
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    color: 'var(--text)',
+                    borderColor: 'var(--outline)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--surface)';
+                  }}
+                >
                     返回题库
                 </button>
             </div>
@@ -269,30 +370,162 @@ export const QuizReviewer: React.FC<Props> = ({
 
       {/* Middle Column: Details List */}
       {/* Logic: Takes full width available. If chat open, it shares space with spacer. */}
-      <div className="flex-1 min-w-0 flex flex-col relative overflow-x-hidden">
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col relative overflow-x-hidden">
+        {/* Mobile Summary - Collapsible, Floating with glassmorphism (md:hidden) */}
+        {!isChatOpen && !isInterim && (
+          <details className="md:hidden fixed top-[calc(var(--topbar-h,64px)+8px)] left-0 right-0 z-40 mx-4">
+            <summary 
+              className="flex items-center justify-between px-4 py-3 rounded-xl border cursor-pointer transition-colors list-none backdrop-blur-md shadow-lg"
+              style={{
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.35)',
+                borderColor: 'var(--outline)',
+              }}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div 
+                  className="flex items-center justify-center w-10 h-10 rounded-full text-sm font-black shrink-0"
+                  style={{
+                    backgroundColor: score >= 80 ? 'var(--success)' : 'var(--warning)',
+                    color: 'var(--on-primary)',
+                  }}
+                >
+                  {score}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold truncate" style={{ color: 'var(--text)' }}>练习回顾</div>
+                  <div className="text-xs truncate" style={{ color: 'var(--muted)' }}>
+                    答对 {correctCount}/{totalQuestions}
+                    {notesCount > 0 && <> · 笔记 {notesCount}</>}
+                  </div>
+                </div>
+              </div>
+              <svg className="w-5 h-5 shrink-0 transition-transform" style={{ color: 'var(--muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            
+            <div className="mt-3 space-y-3 backdrop-blur-md rounded-xl shadow-lg border" style={{ backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.35)', borderColor: 'var(--outline)' }}>
+              <div 
+                className="p-5 rounded-2xl shadow-sm border text-center relative overflow-hidden transition-colors"
+                style={{
+                  backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.5)',
+                  borderColor: 'var(--outline)',
+                }}
+              >
+                <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: 'var(--primary)' }}></div>
+                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>练习回顾</h3>
+                <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>{new Date(session.startTime).toLocaleString()}</p>
+                
+                <div 
+                  className="relative w-32 h-32 mx-auto flex items-center justify-center rounded-full border-[10px]"
+                  style={{ borderColor: 'var(--surface2)' }}
+                >
+                  <svg 
+                    className="absolute top-0 left-0 w-full h-full transform -rotate-90" 
+                    style={{ 
+                      color: score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--warning)' : 'var(--warning)',
+                    }}
+                    viewBox="0 0 100 100"
+                  >
+                    <circle cx="50" cy="50" r="44" stroke="currentColor" strokeWidth="12" fill="none" strokeDasharray={`${score * 2.76} 276`} />
+                  </svg>
+                  <div className="text-center">
+                    <div 
+                      className="text-3xl font-black"
+                      style={{ 
+                        color: score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--warning)' : 'var(--warning)',
+                      }}
+                    >
+                      {score}
+                    </div>
+                    <div className="text-xs font-bold uppercase mt-1" style={{ color: 'var(--muted)' }}>分数</div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-center gap-6 text-center">
+                  <div>
+                    <div className="text-xl font-bold" style={{ color: 'var(--text)' }}>{correctCount}</div>
+                    <div className="text-xs" style={{ color: 'var(--muted)' }}>答对</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold" style={{ color: 'var(--text)' }}>{totalQuestions}</div>
+                    <div className="text-xs" style={{ color: 'var(--muted)' }}>总题数</div>
+                  </div>
+                </div>
+                
+                {notesCount > 0 && (
+                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--outline)' }}>
+                    <div className="flex items-center justify-center gap-2" style={{ color: 'var(--warning)' }}>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                      </svg>
+                      <span className="text-xs font-bold">{notesCount} 条笔记</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <button 
+                  onClick={onRetake} 
+                  className="w-full px-5 py-2.5 font-bold rounded-xl transition text-sm"
+                  style={{ 
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--on-primary)',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  再做一次
+                </button>
+                <button 
+                  onClick={onExit} 
+                  className="w-full px-5 py-2.5 font-bold rounded-xl border transition text-sm"
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    color: 'var(--text)',
+                    borderColor: 'var(--outline)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--surface)';
+                  }}
+                >
+                  返回题库
+                </button>
+              </div>
+            </div>
+          </details>
+        )}
+
         {/* Interim Header */}
         {isInterim && (
-           <div className="mb-4 flex items-center justify-between">
+           <div className="mb-4 flex items-center justify-between shrink-0">
               <div>
-                 <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">阶段小结</h2>
-                 <p className="text-slate-500 dark:text-slate-400 text-sm">本组共 {totalQuestions} 题，答对 {correctCount} 题。</p>
+                 <h2 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>阶段小结</h2>
+                 <p className="text-sm" style={{ color: 'var(--muted)' }}>本组共 {totalQuestions} 题，答对 {correctCount} 题。</p>
               </div>
            </div>
         )}
 
-        <div className={`space-y-4 ${isChatOpen ? 'md:pr-0' : 'md:pr-2'} pt-4 pb-24 transition-all duration-500 min-w-0 overflow-x-hidden ${isDocked ? 'break-words' : ''}`}>
+        <div className={`flex-1 min-h-0 space-y-4 ${isChatOpen ? 'md:pr-0' : 'md:pr-2'} md:pt-16 pb-16 transition-all duration-500 min-w-0 overflow-y-auto overflow-x-hidden ${isDocked ? 'break-words' : ''}`}>
+          {/* Mobile top spacer - prevent content from being hidden by floating card */}
+          <div className="md:hidden h-40"></div>
+          
           {/* Notes Summary Section - Only show in final review (not interim) if there are notes */}
           {!isInterim && notesCount > 0 && (
             <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 p-6 rounded-2xl border-2 border-yellow-200 dark:border-yellow-800/30 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-yellow-400 dark:bg-yellow-600 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--warning)' }}>
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">📝 笔记汇总</h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">你在本次练习中记录了 {notesCount} 条笔记</p>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>📝 笔记汇总</h3>
+                  <p className="text-xs" style={{ color: 'var(--muted)' }}>你在本次练习中记录了 {notesCount} 条笔记</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -303,7 +536,7 @@ export const QuizReviewer: React.FC<Props> = ({
                   return (
                     <div key={q.id} className="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-yellow-200 dark:border-yellow-800/30">
                       <div className="flex items-start gap-3">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold shrink-0 mt-0.5">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 mt-0.5" style={{ backgroundColor: 'var(--warning)', color: 'var(--on-primary)', opacity: 0.2 }}>
                           {(() => {
                             // 优先使用 questionIndex
                             if (resp?.questionIndex !== undefined) {
@@ -315,8 +548,8 @@ export const QuizReviewer: React.FC<Props> = ({
                           })()}
                         </span>
                         <div className="flex-1 min-w-0 overflow-hidden">
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 truncate break-words">{q.content}</p>
-                          <p className="text-sm text-slate-900 dark:text-slate-100 whitespace-pre-wrap break-words overflow-wrap-anywhere overflow-x-hidden">{resp.annotation}</p>
+                          <p className="text-sm mb-2 truncate break-words" style={{ color: 'var(--muted)' }}>{q.content}</p>
+                          <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere overflow-x-hidden" style={{ color: 'var(--text)' }}>{resp.annotation}</p>
                         </div>
                       </div>
                     </div>
@@ -334,17 +567,37 @@ export const QuizReviewer: React.FC<Props> = ({
             
             const isActive = chatQuestion?.q.id === q.id;
 
+            // 确定边框颜色：如果正在问 AI，使用主题色；否则根据正确/错误/存疑状态
+            const borderColor = isActive 
+              ? 'var(--primary)' 
+              : isCorrect 
+                ? 'var(--success)' 
+                : isFlagged 
+                  ? 'var(--warning)' 
+                  : 'var(--danger)';
+
             return (
               <div 
                   key={q.id} 
                   className={`bg-white dark:bg-white/5 p-6 rounded-2xl border-l-[6px] shadow-sm transition-all hover:shadow-md min-w-0 overflow-hidden
-                      ${isCorrect ? 'border-green-500' : isFlagged ? 'border-orange-400' : 'border-red-500'}
-                      ${isActive ? `ring-2 ring-${themeColor}-400 ring-offset-2 dark:ring-offset-gray-950` : ''}
+                      ${isActive ? 'ring-2 ring-offset-2 ring-[var(--primary)]' : ''}
                   `}
+                  style={{
+                    borderLeftColor: borderColor,
+                    ...(isActive ? {
+                      '--tw-ring-offset-color': 'var(--bg)',
+                    } as React.CSSProperties : {})
+                  }}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-slate-400 text-xs font-bold">
+                    <span 
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold"
+                      style={{
+                        backgroundColor: 'var(--surface2)',
+                        color: 'var(--muted)',
+                      }}
+                    >
                         {(() => {
                           // 优先使用 questionIndex，如果没有则从 bank.questions 查找
                           if (resp?.questionIndex !== undefined) {
@@ -356,7 +609,7 @@ export const QuizReviewer: React.FC<Props> = ({
                         })()}
                     </span>
                     {isFlagged && (
-                        <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-bold rounded-full flex items-center gap-1">
+                        <span className="px-2 py-0.5 text-xs font-bold rounded-full flex items-center gap-1" style={{ backgroundColor: 'var(--warning)', color: 'var(--on-primary)', opacity: 0.2 }}>
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M3 6a1 1 0 011-1h15a1 1 0 011 1v9a1 1 0 01-1 1h-6.101l-2.424 2.424A1 1 0 019 18V16H4a1 1 0 01-1-1V6z" /></svg>
                             存疑
                         </span>
@@ -366,16 +619,39 @@ export const QuizReviewer: React.FC<Props> = ({
                   <div className="flex gap-2">
                     <button 
                       onClick={() => setChatQuestion({ q, r: resp })}
-                      className={`flex items-center gap-1 text-xs font-bold ${isActive ? `bg-${themeColor}-600 text-white` : `text-${themeColor}-600 dark:text-${themeColor}-400 hover:bg-${themeColor}-50 dark:hover:bg-${themeColor}-900/30`} px-3 py-1.5 rounded-lg transition ${highlightFlag ? 'animate-pulse ring-2 ring-orange-200 dark:ring-orange-800' : ''}`}
+                      className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition"
+                      style={{
+                        backgroundColor: isActive ? 'var(--primary)' : 'transparent',
+                        color: isActive ? 'var(--on-primary)' : 'var(--primary)',
+                        border: highlightFlag ? '2px solid var(--warning)' : 'none',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'var(--primary-container)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
                     >
                       <span>{isActive ? '正在讨论...' : '✨ 问 AI'}</span>
                     </button>
-                    <span className={`px-3 py-1 rounded-lg text-xs font-bold ${isCorrect ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
+                    <span 
+                      className="px-3 py-1 rounded-lg text-xs font-bold"
+                      style={{
+                        backgroundColor: isCorrect 
+                          ? 'rgba(var(--success-rgb, 34, 197, 94), 0.2)'
+                          : 'rgba(var(--danger-rgb, 239, 68, 68), 0.2)',
+                        color: isCorrect ? 'var(--success)' : 'var(--danger)',
+                      }}
+                    >
                       {isCorrect ? '正确' : '错误'}
                     </span>
                   </div>
                 </div>
-                <div className="text-slate-900 dark:text-slate-100 font-medium mb-3 text-sm leading-relaxed break-words overflow-x-hidden">
+                <div className="font-medium mb-3 text-sm leading-relaxed break-words overflow-x-hidden" style={{ color: 'var(--text)' }}>
                   {renderMarkdownText(q.content)}
                 </div>
                 
@@ -393,34 +669,61 @@ export const QuizReviewer: React.FC<Props> = ({
                       return (
                         <div 
                           key={opt.key}
-                          className={`px-3 py-2 rounded-lg text-sm border ${
+                          className="px-3 py-2 rounded-lg text-sm border"
+                          style={
                             isCorrectOption 
-                              ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-green-900 dark:text-green-100'
+                              ? {
+                                  backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.2)',
+                                  borderColor: 'var(--success)',
+                                  color: 'var(--on-primary-container)',
+                                }
                               : isUserAnswer
-                                ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700 text-red-900 dark:text-red-100'
-                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                          }`}
+                                ? {
+                                    backgroundColor: 'rgba(var(--danger-rgb, 239, 68, 68), 0.2)',
+                                    borderColor: 'var(--danger)',
+                                    color: 'var(--on-primary-container)',
+                                  }
+                                : {
+                                    backgroundColor: 'var(--surface2)',
+                                    borderColor: 'var(--outline)',
+                                    color: 'var(--text)',
+                                  }
+                          }
                         >
                           <span className="font-bold mr-2">{opt.key}.</span>
                           {opt.text}
-                          {isCorrectOption && <span className="ml-2 text-green-600 dark:text-green-400">✓</span>}
-                          {isUserAnswer && !isCorrectOption && <span className="ml-2 text-red-600 dark:text-red-400">✗</span>}
+                          {isCorrectOption && <span className="ml-2" style={{ color: 'var(--success)' }}>✓</span>}
+                          {isUserAnswer && !isCorrectOption && <span className="ml-2" style={{ color: 'var(--danger)' }}>✗</span>}
                         </div>
                       );
                     })}
                   </div>
                 )}
                 
-                <div className="bg-slate-50 dark:bg-black/20 p-4 rounded-xl text-sm text-slate-600 dark:text-slate-300 space-y-2 break-words overflow-x-hidden">
+                <div 
+                  className="p-4 rounded-xl text-sm space-y-2 break-words overflow-x-hidden"
+                  style={{
+                    backgroundColor: 'var(--surface2)',
+                    color: 'var(--text)',
+                  }}
+                >
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-8">
                       <div>
-                          <span className="font-bold shrink-0 block sm:inline text-xs text-slate-400 dark:text-slate-500 uppercase mb-1 sm:mb-0">你的回答</span> 
-                          <span className={isCorrect ? 'text-green-700 dark:text-green-400 font-medium' : 'text-red-700 dark:text-red-400 font-medium line-through break-words overflow-wrap-anywhere'}>{JSON.stringify(resp?.userAnswer)}</span>
+                          <span className="font-bold shrink-0 block sm:inline text-xs uppercase mb-1 sm:mb-0" style={{ color: 'var(--muted)' }}>你的回答</span> 
+                          <span 
+                            className="font-medium break-words overflow-wrap-anywhere"
+                            style={{ 
+                              color: isCorrect ? 'var(--success)' : 'var(--danger)',
+                              textDecoration: isCorrect ? 'none' : 'line-through',
+                            }}
+                          >
+                            {JSON.stringify(resp?.userAnswer)}
+                          </span>
                       </div>
                       {!isCorrect && (
                           <div>
-                              <span className="font-bold shrink-0 block sm:inline text-xs text-slate-400 dark:text-slate-500 uppercase mb-1 sm:mb-0">参考答案</span>
-                              <span className="text-green-700 dark:text-green-400 font-medium">
+                              <span className="font-bold shrink-0 block sm:inline text-xs uppercase mb-1 sm:mb-0" style={{ color: 'var(--muted)' }}>参考答案</span>
+                              <span className="font-medium" style={{ color: 'var(--success)' }}>
                                   {q.type === 'single_choice' ? q.answer.correct_option_key : 
                                   q.type === 'multiple_choice' ? q.answer.correct_option_keys?.join(', ') :
                                   q.type === 'true_false' ? (q.answer.correct_boolean ? 'True' : 'False') :
@@ -432,16 +735,16 @@ export const QuizReviewer: React.FC<Props> = ({
                   </div>
                   
                   {resp?.feedback && (
-                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 mt-2 break-words overflow-x-hidden">
-                      <span className="font-bold text-xs uppercase text-purple-600 dark:text-purple-400 block mb-1">AI 智能点评</span>
-                      <p className="text-purple-800 dark:text-purple-300 break-words overflow-wrap-anywhere">{resp.feedback}</p>
+                    <div className="pt-2 border-t mt-2 break-words overflow-x-hidden" style={{ borderColor: 'var(--outline)' }}>
+                      <span className="font-bold text-xs uppercase block mb-1" style={{ color: 'var(--tertiary)' }}>AI 智能点评</span>
+                      <p className="break-words overflow-wrap-anywhere" style={{ color: 'var(--on-tertiary-container)' }}>{resp.feedback}</p>
                     </div>
                   )}
                   
                   {(!isCorrect || isFlagged) && !resp?.feedback && (
-                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 mt-2 break-words overflow-x-hidden">
-                        <span className="font-bold text-xs uppercase text-slate-400 block mb-1">解析</span>
-                        <p className="italic break-words overflow-wrap-anywhere">{q.explanation || "暂无解析。"}</p>
+                    <div className="pt-2 border-t mt-2 break-words overflow-x-hidden" style={{ borderColor: 'var(--outline)' }}>
+                        <span className="font-bold text-xs uppercase block mb-1" style={{ color: 'var(--muted)' }}>解析</span>
+                        <p className="italic break-words overflow-wrap-anywhere" style={{ color: 'var(--text)' }}>{q.explanation || "暂无解析。"}</p>
                     </div>
                   )}
                 </div>
@@ -452,11 +755,11 @@ export const QuizReviewer: React.FC<Props> = ({
                       value={resp?.annotation || ''}
                       onChange={(value) => onAnnotationUpdate(session.id, q.id, value)}
                       placeholder="在此记录你的感想或笔记..."
-                      className="w-full text-xs p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/50 rounded-lg text-slate-600 dark:text-slate-300 placeholder-yellow-300/70 focus:outline-none focus:ring-1 focus:ring-yellow-400 whitespace-pre-wrap"
+                      className="w-full text-xs p-3 rounded-lg focus:outline-none whitespace-pre-wrap note-textarea-fixed"
                       maxHeight={280}
                     />
                     {!resp?.annotation && (
-                      <div className="absolute right-3 top-2 pointer-events-none text-yellow-400 dark:text-yellow-600">
+                      <div className="absolute right-3 top-2 pointer-events-none" style={{ color: 'hsl(48, 50%, 60%)' }}>
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
@@ -473,7 +776,13 @@ export const QuizReviewer: React.FC<Props> = ({
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/45 dark:bg-zinc-900/35 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up">
               <button 
                 onClick={onContinue}
-                className={`px-12 py-3 bg-${themeColor}-600 hover:bg-${themeColor}-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-${themeColor}-200 dark:shadow-none transition transform active:scale-95 flex items-center gap-2`}
+                className="px-12 py-3 text-white text-lg font-bold rounded-xl transition transform active:scale-95 flex items-center gap-2"
+                style={{ 
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--on-primary)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 继续答题
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -528,7 +837,6 @@ export const QuizReviewer: React.FC<Props> = ({
             onClose={() => setChatQuestion(null)}
             question={q}
             userResponse={resp}
-            themeColor={themeColor}
             aiSettings={aiSettings}
             inline={false}
             onChatHistoryUpdate={handleChatHistoryUpdate}

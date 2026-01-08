@@ -9,13 +9,12 @@ interface Props {
   bank: QuestionBank;
   onComplete: (session: QuizSession) => void;
   onExit: () => void;
-  themeColor: string;
   batchSize?: number;
   aiSettings?: AISettings;
   onAnnotationUpdate?: (sessionId: string, questionId: string, text: string) => void;
 }
 
-export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeColor, batchSize, aiSettings, onAnnotationUpdate }) => {
+export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSize, aiSettings, onAnnotationUpdate }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, UserResponse>>({});
@@ -342,7 +341,6 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
             onRetake={() => {}} // Not used
             onExit={onExit} // Allow exit
             onContinue={handleInterimContinue}
-            themeColor={themeColor}
             aiSettings={aiSettings}
             customQuestions={interimQuestions}
             isInterim={true}
@@ -366,10 +364,22 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
   return (
     <div className="w-full h-[calc(100vh-100px)] flex gap-6 mt-2">
        {/* Left Sidebar: Question Map */}
-       <div className="hidden md:flex flex-col w-80 max-w-xs bg-white/45 dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/10 shadow-sm overflow-hidden shrink-0 transition-colors backdrop-blur-md">
-          <div className="p-5 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20">
-             <h3 className="font-bold text-slate-800 dark:text-slate-100">题目列表</h3>
-             <p className="text-xs text-slate-400 mt-1 truncate">{bank.title}</p>
+       <div 
+         className="hidden md:flex flex-col w-80 max-w-xs rounded-3xl border shadow-sm overflow-hidden shrink-0 transition-colors backdrop-blur-md"
+         style={{ 
+           backgroundColor: 'var(--surface)',
+           borderColor: 'var(--outline)',
+         }}
+       >
+          <div 
+            className="p-5 border-b"
+            style={{ 
+              borderColor: 'var(--outline)',
+              backgroundColor: 'var(--surface2)',
+            }}
+          >
+             <h3 className="font-bold" style={{ color: 'var(--text)' }}>题目列表</h3>
+             <p className="text-xs mt-1 truncate" style={{ color: 'var(--muted)' }}>{bank.title}</p>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
              <div className="grid grid-cols-5 gap-3">
@@ -382,66 +392,116 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
                         <button
                             key={q.id}
                             onClick={() => goToQuestion(idx)}
-                            className={`aspect-square rounded-xl flex items-center justify-center text-sm font-bold transition-all relative
-                                ${isCurrent 
-                                    ? `bg-${themeColor}-600 text-white shadow-lg shadow-${themeColor}-200 dark:shadow-none scale-105 z-10` 
-                                    : answered 
-                                        ? `bg-${themeColor}-50 dark:bg-${themeColor}-500/20 text-${themeColor}-600 dark:text-${themeColor}-300 border border-${themeColor}-200 dark:border-${themeColor}-500/20`
-                                        : 'bg-slate-50 dark:bg-black/20 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-black/30'
-                                }
-                            `}
+                            className="aspect-square rounded-xl flex items-center justify-center text-sm font-bold transition-all relative"
+                            style={{
+                              backgroundColor: isCurrent 
+                                ? 'var(--primary)' 
+                                : answered 
+                                  ? 'var(--primary-container)' 
+                                  : 'var(--surface2)',
+                              color: isCurrent 
+                                ? 'var(--on-primary)' 
+                                : answered 
+                                  ? 'var(--on-primary-container)' 
+                                  : 'var(--muted)',
+                              border: answered && !isCurrent ? `1px solid var(--primary)` : 'none',
+                              transform: isCurrent ? 'scale(1.05)' : 'scale(1)',
+                              zIndex: isCurrent ? 10 : 1,
+                            }}
                         >
                             {idx + 1}
-                            {flag && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-orange-400 rounded-full border-2 border-white dark:border-slate-900 -mt-1 -mr-1"></span>}
+                            {flag && <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full border-2 -mt-1 -mr-1" style={{ backgroundColor: 'var(--warning)', borderColor: 'var(--surface)' }}></span>}
                         </button>
                     )
                 })}
              </div>
           </div>
-          <div className="p-4 bg-slate-50/50 dark:bg-black/20 border-t border-slate-100 dark:border-white/5 text-center">
-             <div className="text-xs font-medium text-slate-400">
+          <div 
+            className="p-4 border-t text-center"
+            style={{ 
+              borderColor: 'var(--outline)',
+              backgroundColor: 'var(--surface2)',
+            }}
+          >
+             <div className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
                 进度: {Object.keys(answers).filter(k => isQuestionAnswered(k)).length} / {questions.length}
              </div>
-             <div className="w-full bg-slate-200 dark:bg-white/10 rounded-full h-1.5 mt-2 overflow-hidden">
+             <div className="w-full rounded-full h-1.5 mt-2 overflow-hidden" style={{ backgroundColor: 'var(--surface2)' }}>
                 <div 
-                    className={`bg-${themeColor}-500 h-full rounded-full transition-all duration-500`} 
-                    style={{ width: `${(Object.keys(answers).filter(k => isQuestionAnswered(k)).length / questions.length) * 100}%` }}
+                    className="h-full rounded-full transition-all duration-500" 
+                    style={{ 
+                      width: `${(Object.keys(answers).filter(k => isQuestionAnswered(k)).length / questions.length) * 100}%`,
+                      backgroundColor: 'var(--primary)',
+                    }}
                 ></div>
              </div>
           </div>
        </div>
 
        {/* Center: Main Question Card with Glassmorphism Header */}
-       <div className="flex-1 flex flex-col bg-white dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden relative transition-colors">
+       <div 
+         className="flex-1 flex flex-col rounded-3xl border shadow-sm overflow-hidden relative transition-colors"
+         style={{ 
+           backgroundColor: 'var(--surface)',
+           borderColor: 'var(--outline)',
+         }}
+       >
            {/* Scrollable Content Area - Content goes first so it can scroll behind header */}
            <div className="flex-1 overflow-y-auto glass-content-area">
               {/* Glass Header - Sticky positioned inside scroll container */}
               <div className="sticky top-0 z-50 glass-header">
-                 <div className="px-6 py-4 border-b border-slate-100/50 dark:border-white/10 flex justify-between items-center">
+                 <div 
+                   className="px-6 py-4 border-b flex justify-between items-center"
+                   style={{ borderColor: 'var(--outline)' }}
+                 >
                     <div className="flex items-center gap-4 relative z-10">
-                       <button onClick={onExit} className="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                       <button 
+                         onClick={onExit} 
+                         className="md:hidden transition"
+                         style={{ color: 'var(--muted)' }}
+                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                       >
                           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                           </svg>
                        </button>
                        <div>
-                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 mb-1`}>
+                          <span 
+                            className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-1"
+                            style={{ 
+                              backgroundColor: 'var(--surface2)',
+                              color: 'var(--muted)',
+                            }}
+                          >
                               {currentQ.type.replace('_', ' ')}
                           </span>
-                          <div className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-baseline gap-2">
-                          第 {currentIndex + 1} 题 <span className="text-sm font-normal text-slate-400 hidden sm:inline">/ {questions.length}</span>
+                          <div className="text-xl font-bold flex items-baseline gap-2" style={{ color: 'var(--text)' }}>
+                          第 {currentIndex + 1} 题 <span className="text-sm font-normal hidden sm:inline" style={{ color: 'var(--muted)' }}>/ {questions.length}</span>
                           </div>
                        </div>
                     </div>
                     <div className="flex items-center gap-2 relative z-10">
-                       <button onClick={onExit} className="hidden md:flex items-center gap-1 text-sm font-medium text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg">
+                       <button 
+                         onClick={onExit} 
+                         className="hidden md:flex items-center gap-1 text-sm font-medium transition px-3 py-1.5 rounded-lg"
+                         style={{ color: 'var(--muted)' }}
+                         onMouseEnter={(e) => {
+                           e.currentTarget.style.color = 'var(--text)';
+                           e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                         }}
+                         onMouseLeave={(e) => {
+                           e.currentTarget.style.color = 'var(--muted)';
+                           e.currentTarget.style.backgroundColor = 'transparent';
+                         }}
+                       >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                           </svg>
                           退出
                        </button>
                        <div className="text-right lg:hidden">
-                          <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{currentIndex + 1} / {questions.length}</div>
+                          <div className="text-sm font-bold" style={{ color: 'var(--text)' }}>{currentIndex + 1} / {questions.length}</div>
                        </div>
                     </div>
                  </div>
@@ -452,12 +512,18 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
               {isGradingAI ? (
                 <div className="flex flex-col items-center justify-center min-h-full space-y-6 animate-fade-in">
                     <div className="relative">
-                        <div className={`w-16 h-16 border-4 border-${themeColor}-100 dark:border-${themeColor}-900 border-t-${themeColor}-600 rounded-full animate-spin`}></div>
+                        <div 
+                          className="w-16 h-16 border-4 rounded-full animate-spin"
+                          style={{ 
+                            borderColor: 'var(--primary-container)',
+                            borderTopColor: 'var(--primary)',
+                          }}
+                        ></div>
                         <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-lg">🤖</span>
                         </div>
                     </div>
-                    <p className="text-slate-600 dark:text-slate-300 font-medium">AI 正在批改答案并生成阶段小结...</p>
+                    <p className="font-medium" style={{ color: 'var(--text)' }}>AI 正在批改答案并生成阶段小结...</p>
                 </div>
               ) : (
                 <div className="min-h-[150vh] pb-20">
@@ -467,7 +533,6 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
                       onChange={setCurrentAnswer}
                       disabled={false}
                       showFeedback={false}
-                      themeColor={themeColor}
                   />
                 </div>
               )}
@@ -475,11 +540,29 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
            </div>
 
            {/* Footer Controls - Outside scroll container */}
-           <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 flex justify-between items-center relative z-20">
+           <div 
+             className="p-6 border-t flex justify-between items-center relative z-20"
+             style={{ 
+               borderColor: 'var(--outline)',
+               backgroundColor: 'var(--surface2)',
+             }}
+           >
               <button 
                 onClick={handlePrev} 
                 disabled={currentIndex === 0 || isGradingAI}
-                className="px-6 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-white/5 hover:shadow-sm disabled:opacity-30 disabled:hover:shadow-none transition-all"
+                className="px-6 py-3 rounded-xl font-bold transition-all"
+                style={{ 
+                  color: 'var(--text)',
+                  opacity: (currentIndex === 0 || isGradingAI) ? 0.3 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!(currentIndex === 0 || isGradingAI)) {
+                    e.currentTarget.style.backgroundColor = 'var(--surface)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 上一题
               </button>
@@ -489,11 +572,32 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
                   <button 
                     onClick={() => setIsCurrentFlagged(!isCurrentFlagged)}
                     title="标记存疑"
-                    className={`p-3 rounded-xl transition-all ${
-                        isCurrentFlagged 
-                            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 shadow-inner ring-2 ring-orange-200 dark:ring-orange-800' 
-                            : 'bg-white dark:bg-white/5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-600 dark:hover:text-slate-300'
-                    }`}
+                    className="p-3 rounded-xl transition-all"
+                    style={{
+                      backgroundColor: isCurrentFlagged 
+                        ? 'rgba(var(--warning-rgb, 251, 191, 36), 0.2)' 
+                        : 'var(--surface)',
+                      color: isCurrentFlagged 
+                        ? 'var(--warning)' 
+                        : 'var(--muted)',
+                      border: isCurrentFlagged ? `2px solid var(--warning)` : 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isCurrentFlagged) {
+                        e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                        e.currentTarget.style.color = 'var(--text)';
+                      } else {
+                        e.currentTarget.style.backgroundColor = 'rgba(var(--warning-rgb, 251, 191, 36), 0.3)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isCurrentFlagged) {
+                        e.currentTarget.style.backgroundColor = 'var(--surface)';
+                        e.currentTarget.style.color = 'var(--muted)';
+                      } else {
+                        e.currentTarget.style.backgroundColor = 'rgba(var(--warning-rgb, 251, 191, 36), 0.2)';
+                      }
+                    }}
                   >
                      <svg className="w-6 h-6" fill={isCurrentFlagged ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-8a2 2 0 012-2h14a2 2 0 012 2v8l-2 2h-14l-2-2zm2-10V7a2 2 0 012-2h10.5a2.5 2.5 0 010 5H5z" />
@@ -504,7 +608,22 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
                     <button 
                       onClick={finishQuiz}
                       disabled={isGradingAI || !hasAnswered()}
-                      className="px-8 py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200 dark:shadow-none disabled:opacity-50 disabled:bg-slate-400 disabled:shadow-none transition transform active:scale-95"
+                      className="px-8 py-3 rounded-xl font-bold transition transform active:scale-95"
+                      style={{ 
+                        backgroundColor: 'var(--success)',
+                        color: 'var(--on-primary)',
+                        opacity: (isGradingAI || !hasAnswered()) ? 0.5 : 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!(isGradingAI || !hasAnswered())) {
+                          e.currentTarget.style.opacity = '0.9';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!(isGradingAI || !hasAnswered())) {
+                          e.currentTarget.style.opacity = '1';
+                        }
+                      }}
                     >
                       交卷
                     </button>
@@ -512,7 +631,23 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
                     <button 
                       onClick={handleNext}
                       disabled={!hasAnswered()}
-                      className={`px-8 py-3 rounded-xl font-bold text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 shadow-lg shadow-${themeColor}-200 dark:shadow-none disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:shadow-none disabled:cursor-not-allowed transition transform active:scale-95`}
+                      className="px-8 py-3 rounded-xl font-bold transition transform active:scale-95"
+                      style={{ 
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--on-primary)',
+                        opacity: !hasAnswered() ? 0.5 : 1,
+                        cursor: !hasAnswered() ? 'not-allowed' : 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (hasAnswered()) {
+                          e.currentTarget.style.opacity = '0.9';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (hasAnswered()) {
+                          e.currentTarget.style.opacity = '1';
+                        }
+                      }}
                     >
                       {batchSize && (currentIndex + 1) % batchSize === 0 ? '提交小结' : '下一题'}
                     </button>

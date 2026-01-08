@@ -10,10 +10,9 @@ interface Props {
   onDelete: (id: string) => void;
   onSelect: (bank: QuestionBank, batchSize?: number) => void;
   onViewHistory: (session: QuizSession) => void;
-  themeColor: string;
 }
 
-export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDelete, onSelect, onViewHistory, themeColor }) => {
+export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDelete, onSelect, onViewHistory }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPasteModal, setShowPasteModal] = useState(false);
@@ -157,16 +156,29 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
       {/* Left Sidebar: Actions Panel */}
       <div className="w-full lg:w-80 shrink-0 space-y-6 lg:sticky lg:top-24">
         {/* Changed structure: padding is now on the inner div */}
-        <div className="bg-white/45 dark:bg-white/5 rounded-2xl shadow-sm border border-black/5 dark:border-white/10 overflow-hidden relative transition-colors backdrop-blur-md">
-          <div className={`absolute top-0 left-0 w-full h-1 bg-${themeColor}-500 z-10`}></div>
+        <div 
+          className="rounded-2xl shadow-sm border overflow-hidden relative transition-colors backdrop-blur-md"
+          style={{ 
+            backgroundColor: 'var(--surface)',
+            borderColor: 'var(--outline)',
+          }}
+        >
+          <div className="absolute top-0 left-0 w-full h-1 z-10" style={{ backgroundColor: 'var(--primary)' }}></div>
           <div className="p-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">题库管理</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">导入 JSON 题库，开始智能刷题之旅。</p>
+            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text)' }}>题库管理</h2>
+            <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>导入 JSON 题库，开始智能刷题之旅。</p>
             
             <div className="space-y-3">
               <button 
                 onClick={loadSample}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-${themeColor}-700 dark:text-${themeColor}-200 bg-${themeColor}-50 dark:bg-${themeColor}-500/20 hover:bg-${themeColor}-100 dark:hover:bg-${themeColor}-500/30 rounded-xl transition border border-transparent dark:border-${themeColor}-500/30`}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-xl transition border"
+                style={{ 
+                  color: 'var(--on-primary-container)',
+                  backgroundColor: 'var(--primary-container)',
+                  borderColor: 'transparent',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-container)'}
               >
                 <span className="text-lg">⚡</span> 加载示例题库
               </button>
@@ -174,9 +186,22 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
               <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={() => setShowPasteModal(true)}
-                  className="flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-transparent border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition shadow-sm"
+                  className="flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium border rounded-xl transition shadow-sm"
+                  style={{ 
+                    color: 'var(--text)',
+                    backgroundColor: 'var(--surface)',
+                    borderColor: 'var(--outline)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                    e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--outline)';
+                    e.currentTarget.style.backgroundColor = 'var(--surface)';
+                  }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--muted)' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   粘贴 JSON
@@ -192,9 +217,15 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                   />
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className={`w-full h-full flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 rounded-xl shadow-lg shadow-${themeColor}-200 dark:shadow-none transition`}
+                    className="w-full h-full flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium rounded-xl transition"
+                    style={{ 
+                      color: 'var(--on-primary)',
+                      backgroundColor: 'var(--primary)',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--on-primary)', opacity: 0.8 }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     导入文件
@@ -204,7 +235,10 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
               <button 
                 onClick={() => setShowFormatModal(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition mt-4"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium transition mt-4"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -216,12 +250,26 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 p-4 rounded-xl flex justify-between items-start gap-2 shadow-sm animate-pulse">
+          <div 
+            className="border p-4 rounded-xl flex justify-between items-start gap-2 shadow-sm animate-pulse"
+            style={{ 
+              backgroundColor: 'rgba(var(--danger-rgb, 239, 68, 68), 0.15)',
+              borderColor: 'var(--danger)',
+              color: 'var(--danger)',
+            }}
+          >
             <div>
               <p className="font-bold text-sm">导入失败</p>
-              <p className="text-xs mt-1 opacity-90">{error}</p>
+              <p className="text-xs mt-1" style={{ opacity: 0.9 }}>{error}</p>
             </div>
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 dark:hover:text-red-200">×</button>
+            <button 
+              onClick={() => setError(null)} 
+              style={{ color: 'var(--danger)' }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              ×
+            </button>
           </div>
         )}
       </div>
@@ -231,38 +279,66 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
         
         {/* Batch Mode Configuration */}
         {banks.length > 0 && (
-          <div className="bg-white/45 dark:bg-white/5 p-4 rounded-2xl border border-black/5 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors shadow-sm backdrop-blur-md">
+          <div 
+            className="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors shadow-sm backdrop-blur-md"
+            style={{ 
+              backgroundColor: 'var(--surface)',
+              borderColor: 'var(--outline)',
+            }}
+          >
              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-${themeColor}-50 dark:bg-${themeColor}-500/20 text-${themeColor}-600 dark:text-${themeColor}-300`}>
+                <div 
+                  className="p-2 rounded-lg"
+                  style={{ 
+                    backgroundColor: 'var(--primary-container)',
+                    color: 'var(--on-primary-container)',
+                  }}
+                >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">阶段小结模式</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">开启后，答题过程中将定期进入小结界面，及时复盘。</p>
+                  <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>阶段小结模式</h3>
+                  <p className="text-xs" style={{ color: 'var(--muted)' }}>开启后，答题过程中将定期进入小结界面，及时复盘。</p>
                 </div>
              </div>
              <div className="flex items-center gap-3">
                 <label className="flex items-center cursor-pointer">
                   <div className="relative">
                     <input type="checkbox" className="sr-only" checked={enableBatchMode} onChange={e => handleStageSummaryToggle(e.target.checked)} />
-                    <div className={`block w-10 h-6 rounded-full transition-colors ${enableBatchMode ? `bg-${themeColor}-500` : 'bg-slate-300 dark:bg-slate-700'}`}></div>
-                    <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform ${enableBatchMode ? 'translate-x-4' : ''}`}></div>
+                    <div 
+                      className="block w-10 h-6 rounded-full transition-colors"
+                      style={{ backgroundColor: enableBatchMode ? 'var(--primary)' : 'var(--outline)' }}
+                    ></div>
+                    <div 
+                      className="dot absolute left-1 top-1 w-4 h-4 rounded-full transition transform"
+                      style={{ 
+                        backgroundColor: 'var(--on-primary)',
+                        transform: enableBatchMode ? 'translateX(16px)' : 'translateX(0)',
+                      }}
+                    ></div>
                   </div>
                 </label>
                 {enableBatchMode && (
                    <div className="flex items-center gap-2 animate-fade-in-right">
-                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300">每</span>
+                      <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>每</span>
                       <input 
                         type="number" 
                         min="1" 
                         max="50"
                         value={batchSize} 
                         onChange={e => handleBatchSizeChange(parseInt(e.target.value) || 1)}
-                        className={`w-14 px-2 py-1 text-center text-sm font-bold border rounded-lg focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 bg-white dark:bg-black/20 text-slate-900 dark:text-white border-slate-200 dark:border-white/10`}
+                        className="w-14 px-2 py-1 text-center text-sm font-bold border rounded-lg focus:outline-none"
+                        style={{ 
+                          borderColor: 'var(--outline)',
+                          backgroundColor: 'var(--surface2)',
+                          color: 'var(--text)',
+                        }}
+                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ring)'}
+                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--outline)'}
                       />
-                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300">题一结</span>
+                      <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>题一结</span>
                    </div>
                 )}
              </div>
@@ -270,14 +346,26 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
         )}
 
         {banks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white/45 dark:bg-white/5 rounded-3xl border-2 border-dashed border-black/5 dark:border-white/10 text-center transition-colors backdrop-blur-md">
-            <div className={`w-16 h-16 bg-${themeColor}-50 dark:bg-${themeColor}-500/20 text-${themeColor}-200 dark:text-${themeColor}-300 rounded-full flex items-center justify-center mb-4`}>
+          <div 
+            className="flex flex-col items-center justify-center py-24 rounded-3xl border-2 border-dashed text-center transition-colors backdrop-blur-md"
+            style={{ 
+              backgroundColor: 'var(--surface)',
+              borderColor: 'var(--outline)',
+            }}
+          >
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ 
+                backgroundColor: 'var(--primary-container)',
+                color: 'var(--on-primary-container)',
+              }}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">暂无题库</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 max-w-xs mx-auto">左侧选择导入方式，开始你的学习。</p>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>暂无题库</h3>
+            <p className="text-sm mt-1 max-w-xs mx-auto" style={{ color: 'var(--muted)' }}>左侧选择导入方式，开始你的学习。</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -286,7 +374,14 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
               const lastScore = bankSessions.length > 0 ? bankSessions[0].totalScore : null;
 
               return (
-                <div key={bank.id} className="group relative bg-white/45 dark:bg-white/5 rounded-2xl shadow-sm border border-black/5 dark:border-white/10 transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-md">
+                <div 
+                  key={bank.id} 
+                  className="group relative rounded-2xl shadow-sm border transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-md"
+                  style={{ 
+                    backgroundColor: 'var(--surface)',
+                    borderColor: 'var(--outline)',
+                  }}
+                >
                    {/* Spotlight Overlay */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
                     style={{
@@ -309,12 +404,28 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                   
                   <div className="p-6 flex-1 cursor-pointer relative z-20" onClick={() => onSelect(bank, enableBatchMode ? batchSize : undefined)}>
                     <div className="flex justify-between items-start mb-3">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-${themeColor}-50 dark:bg-${themeColor}-500/20 text-${themeColor}-700 dark:text-${themeColor}-300 border border-transparent dark:border-${themeColor}-500/20`}>
+                      <span 
+                        className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border"
+                        style={{ 
+                          backgroundColor: 'var(--primary-container)',
+                          color: 'var(--on-primary-container)',
+                          borderColor: 'transparent',
+                        }}
+                      >
                         {bank.questions.length} 题
                       </span>
                       <button 
                         onClick={(e) => { e.stopPropagation(); setDeleteConfirmBankId(bank.id); }}
-                        className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                        className="transition p-1 rounded"
+                        style={{ color: 'var(--muted)' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--danger)';
+                          e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--muted)';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                         title="删除题库"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -322,32 +433,61 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                         </svg>
                       </button>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2 truncate group-hover:text-${themeColor}-600 dark:group-hover:text-${themeColor}-400 transition-colors">{bank.title}</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3 mb-4 leading-relaxed">{bank.description || "暂无描述。"}</p>
+                    <h3 
+                      className="text-lg font-bold mb-2 truncate transition-colors"
+                      style={{ color: 'var(--text)' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                    >
+                      {bank.title}
+                    </h3>
+                    <p className="text-sm line-clamp-3 mb-4 leading-relaxed" style={{ color: 'var(--muted)' }}>{bank.description || "暂无描述。"}</p>
                     
                     {bank.tags && bank.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-3">
                         {bank.tags.slice(0, 3).map(tag => (
-                          <span key={tag} className="px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 text-[10px] uppercase tracking-wide font-medium rounded">#{tag}</span>
+                          <span 
+                            key={tag} 
+                            className="px-2 py-0.5 text-[10px] uppercase tracking-wide font-medium rounded"
+                            style={{ 
+                              backgroundColor: 'var(--surface2)',
+                              color: 'var(--muted)',
+                            }}
+                          >
+                            #{tag}
+                          </span>
                         ))}
                       </div>
                     )}
                     
                     {lastScore !== null && (
-                      <div className="text-xs text-slate-400 font-medium">
-                        上次得分: <span className={lastScore >= 60 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>{lastScore}分</span>
+                      <div className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                        上次得分: <span style={{ color: lastScore >= 60 ? 'var(--success)' : 'var(--warning)' }}>{lastScore}分</span>
                       </div>
                     )}
                   </div>
                   
-                  <div className="px-6 py-4 border-t border-slate-50 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 flex flex-col gap-2 relative z-20">
+                  <div 
+                    className="px-6 py-4 border-t flex flex-col gap-2 relative z-20"
+                    style={{ 
+                      borderColor: 'var(--outline)',
+                      backgroundColor: 'var(--surface2)',
+                    }}
+                  >
                     {(() => {
                       const savedProgressKey = `qb_progress_${bank.id}`;
                       const savedProgress = localStorage.getItem(savedProgressKey);
                       const hasProgress = savedProgress !== null;
                       
                       return hasProgress ? (
-                        <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                        <div 
+                          className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border"
+                          style={{ 
+                            color: 'var(--warning)',
+                            backgroundColor: 'rgba(var(--warning-rgb, 251, 191, 36), 0.15)',
+                            borderColor: 'var(--warning)',
+                          }}
+                        >
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                           </svg>
@@ -358,7 +498,13 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                     <div className="flex items-center gap-3">
                     <button 
                       onClick={() => onSelect(bank, enableBatchMode ? batchSize : undefined)}
-                      className={`flex-1 bg-${themeColor}-600 hover:bg-${themeColor}-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition shadow-sm group-hover:shadow-${themeColor}-500/25`}
+                      className="flex-1 font-bold py-2 px-4 rounded-lg text-sm transition"
+                      style={{ 
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--on-primary)',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
                         {(() => {
                           const savedProgressKey = `qb_progress_${bank.id}`;
@@ -369,7 +515,18 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                     {bankSessions.length > 0 && (
                        <button 
                         onClick={() => setHistoryModalBankId(bank.id)}
-                        className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-white/10 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition"
+                        className="p-2 rounded-lg border border-transparent transition"
+                        style={{ color: 'var(--muted)' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--text)';
+                          e.currentTarget.style.backgroundColor = 'var(--surface)';
+                          e.currentTarget.style.borderColor = 'var(--outline)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--muted)';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.borderColor = 'transparent';
+                        }}
                         title="查看历史记录"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -379,7 +536,18 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                     )}
                       <button 
                         onClick={() => setDeleteConfirmBankId(bank.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg border border-transparent hover:border-red-200 dark:hover:border-red-800 transition"
+                        className="p-2 rounded-lg border border-transparent transition"
+                        style={{ color: 'var(--muted)' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--danger)';
+                          e.currentTarget.style.backgroundColor = 'var(--surface)';
+                          e.currentTarget.style.borderColor = 'var(--danger)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--muted)';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.borderColor = 'transparent';
+                        }}
                         title="删除题库"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -397,14 +565,38 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* Paste Modal */}
       {showPasteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
-          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-black/10 dark:border-white/10">
-            <div className="p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+          <div 
+            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            style={{ 
+              backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
+              borderColor: 'var(--outline)',
+            }}
+          >
+            <div 
+              className="p-5 border-b flex justify-between items-center"
+              style={{ 
+                borderColor: 'var(--outline)',
+                backgroundColor: 'var(--surface2)',
+              }}
+            >
               <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">粘贴 JSON 内容</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">支持 V1 和 V2 格式（推荐使用 V2）</p>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>粘贴 JSON 内容</h3>
+                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>支持 V1 和 V2 格式（推荐使用 V2）</p>
               </div>
-              <button onClick={() => setShowPasteModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 transition">
+              <button 
+                onClick={() => setShowPasteModal(false)} 
+                className="p-1 rounded transition"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -412,23 +604,59 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
             </div>
             <div className="p-0 flex-1 overflow-hidden relative group">
               <textarea 
-                className={`w-full h-full p-5 font-mono text-xs leading-relaxed bg-white dark:bg-[#1e1e2e] text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-${themeColor}-100 dark:focus:ring-${themeColor}-500/20 resize-none`}
+                className="w-full h-full p-5 font-mono text-xs leading-relaxed focus:outline-none resize-none"
+                style={{
+                  backgroundColor: 'var(--surface2)',
+                  color: 'var(--text)',
+                }}
                 placeholder='在此粘贴 Schema V2 JSON 内容（也兼容 V1 格式）...'
                 value={pasteContent}
                 onChange={(e) => setPasteContent(e.target.value)}
+                onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ring)'}
+                onBlur={(e) => e.currentTarget.style.borderColor = 'var(--outline)'}
               ></textarea>
             </div>
-            <div className="p-5 border-t border-slate-100 dark:border-white/10 flex justify-end gap-3 bg-slate-50/50 dark:bg-black/20">
+            <div 
+              className="p-5 border-t flex justify-end gap-3"
+              style={{ 
+                borderColor: 'var(--outline)',
+                backgroundColor: 'var(--surface2)',
+              }}
+            >
               <button 
                 onClick={() => setShowPasteModal(false)}
-                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-xl transition"
+                className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 取消
               </button>
               <button 
                 onClick={handlePasteImport}
                 disabled={!pasteContent.trim()}
-                className={`px-6 py-2.5 text-sm font-bold bg-${themeColor}-600 text-white rounded-xl hover:bg-${themeColor}-700 disabled:opacity-50 shadow-lg shadow-${themeColor}-200 dark:shadow-none transition transform active:scale-95`}
+                className="px-6 py-2.5 text-sm font-bold rounded-xl transition transform active:scale-95"
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--on-primary)',
+                  opacity: !pasteContent.trim() ? 0.5 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (pasteContent.trim()) {
+                    e.currentTarget.style.opacity = '0.9';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (pasteContent.trim()) {
+                    e.currentTarget.style.opacity = '1';
+                  }
+                }}
               >
                 确认导入
               </button>
@@ -439,28 +667,74 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* Format Spec Modal */}
       {showFormatModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
-          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-black/10 dark:border-white/10">
-             <div className="p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+          <div 
+            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            style={{ 
+              backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
+              borderColor: 'var(--outline)',
+            }}
+          >
+             <div 
+               className="p-5 border-b flex justify-between items-center"
+               style={{ 
+                 borderColor: 'var(--outline)',
+                 backgroundColor: 'var(--surface2)',
+               }}
+             >
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">题库格式规范 (Schema V2)</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">支持 Markdown 格式的题干内容</p>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>题库格式规范 (Schema V2)</h3>
+                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>支持 Markdown 格式的题干内容</p>
               </div>
-              <button onClick={() => setShowFormatModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 transition">
+              <button 
+                onClick={() => setShowFormatModal(false)} 
+                className="p-1 rounded transition"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-[#1e1e2e]">
-              <pre className="text-xs font-mono bg-slate-900 text-slate-300 p-4 rounded-xl overflow-x-auto shadow-inner border border-slate-700 dark:border-white/10">
+            <div 
+              className="flex-1 overflow-y-auto p-6"
+              style={{ backgroundColor: 'var(--surface2)' }}
+            >
+              <pre 
+                className="text-xs font-mono p-4 rounded-xl overflow-x-auto shadow-inner border"
+                style={{ 
+                  backgroundColor: 'var(--bg)',
+                  color: 'var(--text)',
+                  borderColor: 'var(--outline)',
+                }}
+              >
                 {formatSpec}
               </pre>
             </div>
-             <div className="p-5 border-t border-slate-100 dark:border-white/10 flex justify-end bg-white dark:bg-[#1e1e2e]">
+             <div 
+               className="p-5 border-t flex justify-end"
+               style={{ 
+                 borderColor: 'var(--outline)',
+                 backgroundColor: 'var(--surface)',
+               }}
+             >
               <button 
                 onClick={() => setShowFormatModal(false)}
-                className={`px-6 py-2.5 text-sm font-bold bg-${themeColor}-600 text-white rounded-xl hover:bg-${themeColor}-700 shadow-lg shadow-${themeColor}-200 dark:shadow-none transition`}
+                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--on-primary)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 我知道了
               </button>
@@ -471,35 +745,76 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* History List Modal */}
       {historyModalBankId && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
-           <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-black/10 dark:border-white/10">
-             <div className="p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
-               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">练习记录</h3>
-               <button onClick={() => setHistoryModalBankId(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+           <div 
+             className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+             style={{ 
+               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
+               borderColor: 'var(--outline)',
+             }}
+           >
+             <div 
+               className="p-5 border-b flex justify-between items-center"
+               style={{ 
+                 borderColor: 'var(--outline)',
+                 backgroundColor: 'var(--surface2)',
+               }}
+             >
+               <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>练习记录</h3>
+               <button 
+                 onClick={() => setHistoryModalBankId(null)} 
+                 className="transition"
+                 style={{ color: 'var(--muted)' }}
+                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+                 onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+               >
                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                  </svg>
                </button>
              </div>
-             <div className="flex-1 overflow-y-auto p-2 bg-slate-50 dark:bg-[#1e1e2e] space-y-2">
+             <div 
+               className="flex-1 overflow-y-auto p-2 space-y-2"
+               style={{ backgroundColor: 'var(--surface2)' }}
+             >
                 {getBankSessions(historyModalBankId).length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 text-sm">暂无练习记录</div>
+                    <div className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>暂无练习记录</div>
                 ) : (
                     getBankSessions(historyModalBankId).map((session, idx) => (
                         <div 
                             key={session.id} 
                             onClick={() => { onViewHistory(session); setHistoryModalBankId(null); }}
-                            className="bg-white dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-md cursor-pointer transition flex justify-between items-center group"
+                            className="p-4 rounded-xl border hover:shadow-md cursor-pointer transition flex justify-between items-center group"
+                            style={{
+                              backgroundColor: 'var(--surface)',
+                              borderColor: 'var(--outline)',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--primary)';
+                              e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--outline)';
+                              e.currentTarget.style.backgroundColor = 'var(--surface)';
+                            }}
                         >
                            <div>
-                              <div className="text-xs text-slate-400 font-mono mb-1">
+                              <div className="text-xs font-mono mb-1" style={{ color: 'var(--muted)' }}>
                                 {new Date(session.startTime).toLocaleString()}
                               </div>
-                              <div className={`font-bold ${session.totalScore >= 60 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                              <div 
+                                className="font-bold"
+                                style={{ color: session.totalScore >= 60 ? 'var(--success)' : 'var(--warning)' }}
+                              >
                                 {session.totalScore} 分
                               </div>
                            </div>
-                           <div className="text-slate-300 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-blue-400">
+                           <div 
+                             className="transition"
+                             style={{ color: 'var(--muted)' }}
+                             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                           >
                               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -514,25 +829,53 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmBankId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
-            <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-sm flex flex-col transition-colors border border-black/10 dark:border-white/10 p-6 text-center">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+            <div 
+              className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-sm flex flex-col transition-colors border p-6 text-center"
+              style={{ 
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
+                borderColor: 'var(--outline)',
+              }}
+            >
+              <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ 
+                  backgroundColor: 'var(--danger)',
+                  color: 'var(--on-primary)',
+                  opacity: 0.2,
+                }}
+              >
                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                  </svg>
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">确认删除?</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">此操作无法撤销。该题库及所有相关的练习记录将被永久删除。</p>
+              <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>确认删除?</h3>
+              <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>此操作无法撤销。该题库及所有相关的练习记录将被永久删除。</p>
               <div className="flex gap-3 justify-center">
                   <button 
                     onClick={() => setDeleteConfirmBankId(null)}
-                    className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition"
+                    className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                    style={{ color: 'var(--muted)' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--text)';
+                      e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'var(--muted)';
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     取消
                   </button>
                   <button 
                     onClick={() => { onDelete(deleteConfirmBankId); setDeleteConfirmBankId(null); }}
-                    className="px-5 py-2.5 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 dark:shadow-none transition"
+                    className="px-5 py-2.5 text-sm font-bold rounded-xl transition"
+                    style={{ 
+                      backgroundColor: 'var(--danger)',
+                      color: 'var(--on-primary)',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     确认删除
                   </button>

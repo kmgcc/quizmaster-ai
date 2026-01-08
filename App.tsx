@@ -1,23 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { BankManager } from './components/BankManager';
 import { QuizRunner } from './components/QuizRunner';
 import { QuizReviewer } from './components/QuizReviewer';
 import { TestRunner } from './components/TestRunner';
 import { QuestionBank, QuizSession, AISettings } from './types';
 import { exportBackup, downloadBackupJson, importBackup, BackupV1 } from './utils/backup';
+import { ThemePalette, applyTheme, getThemeDisplayName, getThemePreviewColors, themes } from './utils/theme';
 
 type ThemeMode = 'light' | 'dark' | 'system';
-
-// Mappings for "Low Saturation" dark backgrounds
-// Adjusted to be very subtle, deep darks
-const DARK_BG_MAP: Record<string, string> = {
-  amber: '#1a1005',
-};
-
-// RGB values for the theme colors
-const THEME_RGB_MAP: Record<string, string> = {
-  amber: '245, 158, 11',
-};
 
 const App: React.FC = () => {
   const [view, setView] = useState<'home' | 'quiz' | 'review' | 'tests'>('home');
@@ -29,7 +20,7 @@ const App: React.FC = () => {
   const [quizBatchSize, setQuizBatchSize] = useState<number | undefined>(undefined);
   
   // Settings State
-  const [themeColor, setThemeColor] = useState<string>('amber');
+  const [themePalette, setThemePalette] = useState<ThemePalette>('teal_elegant');
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const [showSettings, setShowSettings] = useState(false);
   const [showAiConfigModal, setShowAiConfigModal] = useState(false);
@@ -37,9 +28,10 @@ const App: React.FC = () => {
   const [aiSettings, setAiSettings] = useState<AISettings>({ roleName: 'AI 助教', customPrompt: '' });
   const [apiKey, setApiKey] = useState<string>('');
   
-  const colors = ['amber'];
   const settingsRef = useRef<HTMLDivElement>(null);
+  const settingsDropdownRef = useRef<HTMLDivElement>(null);
   const backupFileInputRef = useRef<HTMLInputElement>(null);
+  const [settingsPosition, setSettingsPosition] = useState<{ top: number; right: number } | null>(null);
 
   // --- Global Mouse Tracker ---
   useEffect(() => {
@@ -53,7 +45,7 @@ const App: React.FC = () => {
 
   // --- Dark Mode & Theme Logic ---
   useEffect(() => {
-    const applyTheme = () => {
+    const updateTheme = () => {
       const isDark = 
         themeMode === 'dark' || 
         (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -63,14 +55,17 @@ const App: React.FC = () => {
       } else {
         document.documentElement.classList.remove('dark');
       }
+      
+      // 应用主题配色
+      applyTheme(themePalette, isDark);
     };
 
-    applyTheme();
+    updateTheme();
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => { if (themeMode === 'system') applyTheme(); };
+    const handler = () => { if (themeMode === 'system') updateTheme(); };
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
-  }, [themeMode]);
+  }, [themeMode, themePalette]);
 
   useEffect(() => {
     const savedBanks = localStorage.getItem('qb_banks');
@@ -81,17 +76,50 @@ const App: React.FC = () => {
     if (savedAiSettings) { try { setAiSettings(JSON.parse(savedAiSettings)); } catch (e) { console.error("Failed to load AI settings"); } }
     const savedThemeMode = localStorage.getItem('qb_theme_mode');
     if (savedThemeMode) { setThemeMode(savedThemeMode as ThemeMode); }
+    const savedThemePalette = localStorage.getItem('qb_pref_theme_palette');
+    if (savedThemePalette && Object.keys(themes).includes(savedThemePalette)) {
+      setThemePalette(savedThemePalette as ThemePalette);
+    }
     const savedApiKey = localStorage.getItem('qb_api_key');
     if (savedApiKey) { setApiKey(savedApiKey); }
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      const inButton = settingsRef.current?.contains(target);
+      const inDropdown = settingsDropdownRef.current?.contains(target);
+
+      if (!inButton && !inDropdown) {
         setShowSettings(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // 计算设置弹窗位置
+  useEffect(() => {
+    if (showSettings && settingsRef.current) {
+      const updatePosition = () => {
+        const rect = settingsRef.current?.getBoundingClientRect();
+        if (rect) {
+          setSettingsPosition({
+            top: rect.bottom + 8, // mt-2 = 8px
+            right: window.innerWidth - rect.right,
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+      return () => {
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
+      };
+    } else {
+      setSettingsPosition(null);
+    }
+  }, [showSettings]);
 
   const saveBanks = (newBanks: QuestionBank[]) => {
     setBanks(newBanks);
@@ -111,6 +139,11 @@ const App: React.FC = () => {
   const handleSetThemeMode = (mode: ThemeMode) => {
       setThemeMode(mode);
       localStorage.setItem('qb_theme_mode', mode);
+  }
+
+  const handleSetThemePalette = (palette: ThemePalette) => {
+      setThemePalette(palette);
+      localStorage.setItem('qb_pref_theme_palette', palette);
   }
 
   const saveApiKey = (key: string) => {
@@ -291,36 +324,43 @@ const App: React.FC = () => {
     }
   };
 
-  const currentDarkBg = DARK_BG_MAP[themeColor] || DARK_BG_MAP['blue'];
-  const themeRgb = THEME_RGB_MAP[themeColor] || '59, 130, 246';
-  
   const logoSrc = `${import.meta.env.BASE_URL}pwa-192.png`;
 
   return (
     <div 
-      className="min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500 relative selection:bg-blue-100 dark:selection:bg-blue-900/30"
+      className="min-h-screen font-sans transition-colors duration-500 relative"
       style={{ 
-        backgroundColor: themeMode === 'light' ? '#f8fafc' : currentDarkBg,
-        '--theme-rgb': themeRgb,
+        backgroundColor: 'var(--bg)',
+        color: 'var(--text)',
       } as React.CSSProperties}
     >
       
       {/* Header with Glassmorphism */}
       <header 
-        className="fixed top-0 left-0 right-0 z-50 w-full glass-header backdrop-blur-md bg-white/30 dark:bg-zinc-900/25 border-b border-black/5 dark:border-white/10 transition-colors duration-300"
-        style={{ ['--topbar-h' as any]: '64px' }}
+        className="fixed top-0 left-0 right-0 z-50 w-full glass-header backdrop-blur-md border-b transition-colors duration-300"
+        style={{ 
+          ['--topbar-h' as any]: '64px',
+          backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.3)',
+          borderColor: 'var(--outline)',
+        } as React.CSSProperties}
       >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setView('home')}>
             <img src={logoSrc} alt="QuizMaster AI" className="w-8 h-8 rounded-lg shadow-lg object-cover transition-all duration-300 group-hover:scale-110" />
-            <h1 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">QuizMaster AI</h1>
+            <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>QuizMaster AI</h1>
           </div>
           
           <div className="flex items-center gap-4">
              <div className="relative" ref={settingsRef}>
                 <button 
                   onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-white/5 rounded-lg transition"
+                  className="p-2 rounded-lg transition"
+                  style={{ 
+                    color: 'var(--muted)',
+                    backgroundColor: showSettings ? 'var(--surface2)' : 'transparent',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface2)'}
+                  onMouseLeave={(e) => !showSettings && (e.currentTarget.style.backgroundColor = 'transparent')}
                   title="设置与主题"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -329,52 +369,123 @@ const App: React.FC = () => {
                   </svg>
                 </button>
                 
-                {showSettings && (
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-xl shadow-2xl border border-black/10 dark:border-white/10 p-4 z-50 animate-fade-in-down ring-1 ring-black/5">
+                {showSettings && settingsPosition && createPortal(
+                  <div
+                    ref={settingsDropdownRef}
+                    className="fixed w-80 z-[9999] p-4 rounded-xl shadow-2xl border border-white/20 dark:border-white/10 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35 pointer-events-auto"
+                    style={{
+                      top: `${settingsPosition.top}px`,
+                      right: `${settingsPosition.right}px`,
+                      WebkitBackdropFilter: 'blur(24px)',
+                      backdropFilter: 'blur(24px)',
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
                     {/* Theme Mode Toggle */}
                     <div className="mb-4">
-                       <p className="text-xs font-bold text-slate-400 uppercase mb-2">显示模式</p>
-                       <div className="flex bg-slate-100 dark:bg-white/5 rounded-lg p-1">
-                          <button onClick={() => handleSetThemeMode('light')} className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${themeMode === 'light' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
+                       <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>显示模式</p>
+                       <div className="flex rounded-lg p-1" style={{ backgroundColor: 'var(--surface2)' }}>
+                          <button 
+                            onClick={() => handleSetThemeMode('light')} 
+                            className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+                            style={{
+                              backgroundColor: themeMode === 'light' ? 'var(--primary-container)' : 'transparent',
+                              color: themeMode === 'light' ? 'var(--on-primary-container)' : 'var(--muted)',
+                            }}
+                          >
                              ☀️ 浅色
                           </button>
-                          <button onClick={() => handleSetThemeMode('dark')} className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${themeMode === 'dark' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
+                          <button 
+                            onClick={() => handleSetThemeMode('dark')} 
+                            className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+                            style={{
+                              backgroundColor: themeMode === 'dark' ? 'var(--primary-container)' : 'transparent',
+                              color: themeMode === 'dark' ? 'var(--on-primary-container)' : 'var(--muted)',
+                            }}
+                          >
                              🌙 深色
                           </button>
-                          <button onClick={() => handleSetThemeMode('system')} className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${themeMode === 'system' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
+                          <button 
+                            onClick={() => handleSetThemeMode('system')} 
+                            className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+                            style={{
+                              backgroundColor: themeMode === 'system' ? 'var(--primary-container)' : 'transparent',
+                              color: themeMode === 'system' ? 'var(--on-primary-container)' : 'var(--muted)',
+                            }}
+                          >
                              🖥️ 跟随
                           </button>
                        </div>
                     </div>
 
+                    {/* Theme Palette Selector */}
                     <div className="mb-4">
-                      <p className="text-xs font-bold text-slate-400 uppercase mb-2">主题颜色</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {colors.map(c => (
-                          <button
-                            key={c}
-                            onClick={() => setThemeColor(c)}
-                            className={`w-8 h-8 rounded-full bg-${c}-500 transition-transform hover:scale-110 flex items-center justify-center ${themeColor === c ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-offset-slate-900' : ''}`}
-                            title={c}
-                          >
-                             {themeColor === c && <span className="text-white text-xs">✓</span>}
-                          </button>
-                        ))}
+                      <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>主题配色</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(Object.keys(themes) as ThemePalette[]).map(palette => {
+                          const preview = getThemePreviewColors(palette);
+                          const isSelected = themePalette === palette;
+                          return (
+                            <button
+                              key={palette}
+                              onClick={() => handleSetThemePalette(palette)}
+                              className="relative rounded-lg p-2 transition-all border-2 overflow-hidden"
+                              style={{
+                                borderColor: isSelected ? 'var(--primary)' : 'var(--outline)',
+                                backgroundColor: isSelected ? 'var(--primary-container)' : 'var(--surface2)',
+                              }}
+                              title={getThemeDisplayName(palette)}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="flex gap-1">
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.primary }}></div>
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.secondary }}></div>
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.tertiary }}></div>
+                                  {preview.success && (
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.success }}></div>
+                                  )}
+                                </div>
+                                {isSelected && <span className="text-xs" style={{ color: 'var(--on-primary-container)' }}>✓</span>}
+                              </div>
+                              <div className="text-xs font-medium" style={{ color: isSelected ? 'var(--on-primary-container)' : 'var(--text)' }}>
+                                {getThemeDisplayName(palette)}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                     
-                    <div className="border-t border-slate-100 dark:border-white/10 pt-3 space-y-2">
-                       <button onClick={() => { setShowApiKeyModal(true); setShowSettings(false); }} className={`w-full text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-${themeColor}-600 dark:hover:text-${themeColor}-400 transition flex items-center gap-2`}>
+                    <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
+                       <button 
+                         onClick={() => { setShowApiKeyModal(true); setShowSettings(false); }} 
+                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                         style={{ color: 'var(--text)' }}
+                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                       >
                           <span className="text-lg">🔑</span> API Key 配置
                        </button>
-                       <button onClick={() => { setShowAiConfigModal(true); setShowSettings(false); }} className={`w-full text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-${themeColor}-600 dark:hover:text-${themeColor}-400 transition flex items-center gap-2`}>
+                       <button 
+                         onClick={() => { setShowAiConfigModal(true); setShowSettings(false); }} 
+                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                         style={{ color: 'var(--text)' }}
+                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                       >
                           <span className="text-lg">🤖</span> AI 助教设置
                        </button>
                     </div>
 
-                    <div className="border-t border-slate-100 dark:border-white/10 pt-3 space-y-2">
-                       <p className="text-xs font-bold text-slate-400 uppercase mb-2">数据管理</p>
-                       <button onClick={handleExportAllData} className={`w-full text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-${themeColor}-600 dark:hover:text-${themeColor}-400 transition flex items-center gap-2`}>
+                    <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
+                       <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>数据管理</p>
+                       <button 
+                         onClick={handleExportAllData} 
+                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                         style={{ color: 'var(--text)' }}
+                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                       >
                           <span className="text-lg">💾</span> 导出所有数据
                        </button>
                        <input 
@@ -384,17 +495,30 @@ const App: React.FC = () => {
                          className="hidden" 
                          onChange={handleImportAllData} 
                        />
-                       <button onClick={() => backupFileInputRef.current?.click()} className={`w-full text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-${themeColor}-600 dark:hover:text-${themeColor}-400 transition flex items-center gap-2`}>
+                       <button 
+                         onClick={() => backupFileInputRef.current?.click()} 
+                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                         style={{ color: 'var(--text)' }}
+                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                       >
                           <span className="text-lg">📥</span> 导入备份数据
                        </button>
                     </div>
 
-                    <div className="border-t border-slate-100 dark:border-white/10 pt-3 space-y-2">
-                       <button onClick={() => { setView('tests'); setShowSettings(false); }} className={`w-full text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-${themeColor}-600 dark:hover:text-${themeColor}-400 transition flex items-center gap-2`}>
+                    <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
+                       <button 
+                         onClick={() => { setView('tests'); setShowSettings(false); }} 
+                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                         style={{ color: 'var(--text)' }}
+                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                       >
                           <span className="text-lg">🧪</span> 开发者测试
                        </button>
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
              </div>
           </div>
@@ -402,7 +526,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content - Allow scrolling under header */}
-      <main className="max-w-7xl mx-auto px-4 py-8 pt-[calc(var(--topbar-h,64px)+16px)] relative z-10">
+      <main className={`max-w-7xl mx-auto px-4 relative z-10 ${view === 'review' ? '' : 'py-8 pt-[calc(var(--topbar-h,64px)+16px)]'}`}>
         {view === 'home' && (
           <BankManager 
             banks={banks} 
@@ -411,7 +535,6 @@ const App: React.FC = () => {
             onDelete={handleDelete} 
             onSelect={startQuiz}
             onViewHistory={handleViewHistory}
-            themeColor={themeColor}
           />
         )}
 
@@ -420,7 +543,6 @@ const App: React.FC = () => {
             bank={activeBank} 
             onComplete={handleQuizComplete}
             onExit={() => setView('home')} 
-            themeColor={themeColor}
             batchSize={quizBatchSize}
             aiSettings={aiSettings}
             onAnnotationUpdate={handleUpdateAnnotation}
@@ -435,14 +557,19 @@ const App: React.FC = () => {
             onChatHistoryUpdate={handleUpdateChatHistory}
             onRetake={() => startQuiz(activeBank, quizBatchSize)}
             onExit={() => setView('home')}
-            themeColor={themeColor}
             aiSettings={aiSettings}
           />
         )}
 
         {view === 'tests' && (
             <div className="space-y-4">
-                <button onClick={() => setView('home')} className={`text-${themeColor}-600 dark:text-${themeColor}-400 underline`}>← 返回首页</button>
+                <button 
+                  onClick={() => setView('home')} 
+                  className="underline"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  ← 返回首页
+                </button>
                 <TestRunner />
             </div>
         )}
@@ -450,11 +577,29 @@ const App: React.FC = () => {
 
       {/* API Key Config Modal */}
       {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
-          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border border-black/10 dark:border-white/10">
-            <div className={`p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-${themeColor}-600 text-white rounded-t-2xl`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+          <div 
+            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border"
+            style={{ 
+              backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
+              borderColor: 'var(--outline)',
+            }}
+          >
+            <div 
+              className="p-5 border-b flex justify-between items-center rounded-t-2xl"
+              style={{ 
+                backgroundColor: 'var(--primary)',
+                color: 'var(--on-primary)',
+                borderColor: 'var(--outline)',
+              }}
+            >
               <h3 className="text-lg font-bold">🔑 API Key 配置</h3>
-              <button onClick={() => setShowApiKeyModal(false)} className="text-white/80 hover:text-white">
+              <button 
+                onClick={() => setShowApiKeyModal(false)} 
+                style={{ color: 'var(--on-primary)', opacity: 0.8 }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -462,20 +607,35 @@ const App: React.FC = () => {
             </div>
             <div className="p-6 space-y-4">
                <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">DeepSeek API Key</label>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                    用于 AI 批改和智能问答功能。访问 <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">platform.deepseek.com</a> 获取。
+                  <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>DeepSeek API Key</label>
+                  <p className="text-xs mb-2" style={{ color: 'var(--muted)' }}>
+                    用于 AI 批改和智能问答功能。访问 <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }} className="hover:underline">platform.deepseek.com</a> 获取。
                   </p>
                   <input 
                     type="password" 
                     value={apiKey} 
                     onChange={e => setApiKey(e.target.value)}
                     placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    className="w-full p-3 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-black/20 text-slate-900 dark:text-slate-100 transition-colors font-mono text-sm"
+                    className="w-full p-3 border rounded-xl focus:outline-none font-mono text-sm transition-colors"
+                    style={{ 
+                      borderColor: 'var(--outline)',
+                      backgroundColor: 'var(--surface2)',
+                      color: 'var(--text)',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ring)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--outline)'}
                   />
                </div>
                {apiKey && (
-                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-xs text-green-700 dark:text-green-300">
+                 <div 
+                   className="border rounded-lg p-3 text-xs"
+                   style={{ 
+                     backgroundColor: 'var(--success)',
+                     borderColor: 'var(--success)',
+                     color: 'var(--on-primary)',
+                     opacity: 0.2,
+                   }}
+                 >
                    <div className="flex items-center gap-2">
                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -485,7 +645,15 @@ const App: React.FC = () => {
                  </div>
                )}
                {!apiKey && (
-                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-xs text-amber-700 dark:text-amber-300">
+                 <div 
+                   className="border rounded-lg p-3 text-xs"
+                   style={{ 
+                     backgroundColor: 'var(--warning)',
+                     borderColor: 'var(--warning)',
+                     color: 'var(--on-primary)',
+                     opacity: 0.2,
+                   }}
+                 >
                    <div className="flex items-center gap-2">
                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -495,16 +663,31 @@ const App: React.FC = () => {
                  </div>
                )}
             </div>
-            <div className="p-5 border-t border-slate-100 dark:border-white/10 flex justify-end gap-3 bg-slate-50 dark:bg-black/20 rounded-b-2xl">
+            <div 
+              className="p-5 border-t flex justify-end gap-3 rounded-b-2xl"
+              style={{ 
+                borderColor: 'var(--outline)',
+                backgroundColor: 'var(--surface2)',
+              }}
+            >
               <button 
                 onClick={() => setShowApiKeyModal(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+                className="px-4 py-2 text-sm font-medium transition rounded-xl"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
               >
                 取消
               </button>
               <button 
                 onClick={() => { saveApiKey(apiKey); setShowApiKeyModal(false); alert('✅ API Key 已保存！'); }}
-                className={`px-6 py-2.5 text-sm font-bold bg-${themeColor}-600 text-white rounded-xl hover:bg-${themeColor}-700 shadow-lg shadow-${themeColor}-200 dark:shadow-none transition`}
+                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+                style={{ 
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--on-primary)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 保存设置
               </button>
@@ -515,11 +698,29 @@ const App: React.FC = () => {
 
       {/* AI Config Modal */}
       {showAiConfigModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
-          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border border-black/10 dark:border-white/10">
-            <div className={`p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-${themeColor}-600 text-white rounded-t-2xl`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+          <div 
+            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border"
+            style={{ 
+              backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
+              borderColor: 'var(--outline)',
+            }}
+          >
+            <div 
+              className="p-5 border-b flex justify-between items-center rounded-t-2xl"
+              style={{ 
+                backgroundColor: 'var(--primary)',
+                color: 'var(--on-primary)',
+                borderColor: 'var(--outline)',
+              }}
+            >
               <h3 className="text-lg font-bold">AI 助教设置</h3>
-              <button onClick={() => setShowAiConfigModal(false)} className="text-white/80 hover:text-white">
+              <button 
+                onClick={() => setShowAiConfigModal(false)} 
+                style={{ color: 'var(--on-primary)', opacity: 0.8 }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -527,36 +728,65 @@ const App: React.FC = () => {
             </div>
             <div className="p-6 space-y-4">
                <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">AI 角色名称</label>
+                  <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>AI 角色名称</label>
                   <input 
                     type="text" 
                     value={aiSettings.roleName} 
                     onChange={e => setAiSettings({...aiSettings, roleName: e.target.value})}
                     placeholder="例如：AI 助教、严厉的老师、温柔的学姐"
-                    className="w-full p-3 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-black/20 text-slate-900 dark:text-slate-100 transition-colors"
+                    className="w-full p-3 border rounded-xl focus:outline-none transition-colors"
+                    style={{ 
+                      borderColor: 'var(--outline)',
+                      backgroundColor: 'var(--surface2)',
+                      color: 'var(--text)',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ring)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--outline)'}
                   />
                </div>
                <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">系统提示词 (System Prompt)</label>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">自定义 AI 的性格、语气或讲解重点。留空则使用默认配置。</p>
+                  <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>系统提示词 (System Prompt)</label>
+                  <p className="text-xs mb-2" style={{ color: 'var(--muted)' }}>自定义 AI 的性格、语气或讲解重点。留空则使用默认配置。</p>
                   <textarea 
                     value={aiSettings.customPrompt}
                     onChange={e => setAiSettings({...aiSettings, customPrompt: e.target.value})}
                     placeholder="例如：请用苏格拉底式教学法，不要直接给出答案，而是通过提问引导我思考..."
-                    className="w-full p-3 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none text-sm bg-white dark:bg-black/20 text-slate-900 dark:text-slate-100 transition-colors"
+                    className="w-full p-3 border rounded-xl focus:outline-none h-32 resize-none text-sm transition-colors"
+                    style={{ 
+                      borderColor: 'var(--outline)',
+                      backgroundColor: 'var(--surface2)',
+                      color: 'var(--text)',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ring)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--outline)'}
                   />
                </div>
             </div>
-            <div className="p-5 border-t border-slate-100 dark:border-white/10 flex justify-end gap-3 bg-slate-50 dark:bg-black/20 rounded-b-2xl">
+            <div 
+              className="p-5 border-t flex justify-end gap-3 rounded-b-2xl"
+              style={{ 
+                borderColor: 'var(--outline)',
+                backgroundColor: 'var(--surface2)',
+              }}
+            >
               <button 
                 onClick={() => setAiSettings({roleName: 'AI 助教', customPrompt: ''})}
-                className="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+                className="px-4 py-2 text-sm font-medium transition rounded-xl"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
               >
                 恢复默认
               </button>
               <button 
                 onClick={() => { saveAiSettings(aiSettings); setShowAiConfigModal(false); }}
-                className={`px-6 py-2.5 text-sm font-bold bg-${themeColor}-600 text-white rounded-xl hover:bg-${themeColor}-700 shadow-lg shadow-${themeColor}-200 dark:shadow-none transition`}
+                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+                style={{ 
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--on-primary)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 保存设置
               </button>

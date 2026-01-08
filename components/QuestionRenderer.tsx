@@ -9,7 +9,6 @@ interface Props {
   disabled: boolean;
   showFeedback: boolean;
   isCorrect?: boolean;
-  themeColor: string;
 }
 
 // Markdown rendering helper
@@ -89,22 +88,51 @@ const renderMarkdownText = (text: string): React.ReactNode => {
 export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onChange, disabled, showFeedback, isCorrect, themeColor }) => {
   
   const getOptionClass = (isSelected: boolean, isCorrectKey: boolean) => {
-    let base = "relative group w-full text-left p-4 rounded-lg border-2 transition-all flex items-center justify-between overflow-hidden ";
-    
-    // Feedback Mode (No spotlight needed, just colors)
+    return "relative group w-full text-left p-4 rounded-lg border-2 transition-all flex items-center justify-between overflow-hidden ";
+  };
+
+  const getOptionStyle = (isSelected: boolean, isCorrectKey: boolean) => {
+    // Feedback Mode
     if (showFeedback) {
-      if (isCorrectKey) return base + "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400";
-      if (isSelected && !isCorrectKey) return base + "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400";
-      return base + "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50";
+      if (isCorrectKey) {
+        return {
+          backgroundColor: 'var(--success)',
+          borderColor: 'var(--success)',
+          color: 'var(--on-primary)',
+          opacity: 0.2,
+        };
+      }
+      if (isSelected && !isCorrectKey) {
+        return {
+          backgroundColor: 'var(--danger)',
+          borderColor: 'var(--danger)',
+          color: 'var(--on-primary)',
+          opacity: 0.2,
+        };
+      }
+      return {
+        backgroundColor: 'var(--surface)',
+        borderColor: 'var(--outline)',
+        color: 'var(--muted)',
+        opacity: 0.5,
+      };
     }
 
     // Active Mode
     if (isSelected) {
-        return base + `bg-${themeColor}-50 dark:bg-${themeColor}-500/20 border-${themeColor}-500 text-${themeColor}-700 dark:text-${themeColor}-400 shadow-sm`;
+      return {
+        backgroundColor: 'var(--primary-container)',
+        borderColor: 'var(--primary)',
+        color: 'var(--on-primary-container)',
+      };
     }
     
     // Default Mode
-    return base + `bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-slate-100 hover:border-${themeColor}-300 dark:hover:border-${themeColor}-500/30`;
+    return {
+      backgroundColor: 'var(--surface)',
+      borderColor: 'var(--outline)',
+      color: 'var(--text)',
+    };
   };
 
   // Helper to render spotlight overlay for interactive elements
@@ -154,12 +182,23 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
                   onClick={() => !disabled && onChange && onChange(opt.key)}
                   disabled={disabled}
                   className={getOptionClass(isSelected, isCorrectKey)}
+                  style={getOptionStyle(isSelected, isCorrectKey)}
+                  onMouseEnter={(e) => {
+                    if (!showFeedback && !isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--primary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showFeedback && !isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--outline)';
+                    }
+                  }}
                 >
                   {!showFeedback && renderSpotlight()}
                   <span className="font-medium relative z-20">{opt.text}</span>
                   <div className="relative z-20">
-                      {showFeedback && isCorrectKey && <span className="text-green-600 dark:text-green-400 text-sm font-bold">✓</span>}
-                      {showFeedback && isSelected && !isCorrectKey && <span className="text-red-600 dark:text-red-400 text-sm font-bold">✗</span>}
+                      {showFeedback && isCorrectKey && <span className="text-sm font-bold" style={{ color: 'var(--success)' }}>✓</span>}
+                      {showFeedback && isSelected && !isCorrectKey && <span className="text-sm font-bold" style={{ color: 'var(--danger)' }}>✗</span>}
                   </div>
                 </button>
               );
@@ -188,17 +227,28 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
                     onClick={() => !disabled && toggle()}
                     disabled={disabled}
                     className={getOptionClass(isSelected, isCorrectKey)}
+                    style={getOptionStyle(isSelected, isCorrectKey)}
+                    onMouseEnter={(e) => {
+                      if (!showFeedback && !isSelected) {
+                        e.currentTarget.style.borderColor = 'var(--primary)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!showFeedback && !isSelected) {
+                        e.currentTarget.style.borderColor = 'var(--outline)';
+                      }
+                    }}
                   >
                     {!showFeedback && renderSpotlight()}
                     <span className="font-medium relative z-20">{opt.text}</span>
                     <div className="relative z-20">
-                         {showFeedback && isCorrectKey && <span className="text-green-600 dark:text-green-400 text-sm font-bold">✓</span>}
+                         {showFeedback && isCorrectKey && <span className="text-sm font-bold" style={{ color: 'var(--success)' }}>✓</span>}
                     </div>
                   </button>
                 );
               })}
             </div>
-            {!disabled && <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-right">请选择所有正确选项</p>}
+            {!disabled && <p className="text-xs mt-2 text-right" style={{ color: 'var(--muted)' }}>请选择所有正确选项</p>}
           </div>
         );
 
@@ -251,16 +301,32 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
               onChange={(e) => onChange && onChange(e.target.value)}
               disabled={disabled}
               placeholder="请输入你的答案..."
-              className={`w-full p-4 border-2 rounded-lg text-lg outline-none transition-colors bg-white dark:bg-white/5 text-slate-900 dark:text-slate-100 ${
-                showFeedback
-                  ? isCorrect 
-                    ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-100" 
-                    : "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100"
-                  : `border-slate-300 dark:border-white/10 focus:border-${themeColor}-500`
-              }`}
+              className="w-full p-4 border-2 rounded-lg text-lg outline-none transition-colors"
+              style={{
+                borderColor: showFeedback 
+                  ? (isCorrect ? 'var(--success)' : 'var(--danger)')
+                  : 'var(--outline)',
+                backgroundColor: showFeedback
+                  ? (isCorrect ? 'var(--success)' : 'var(--danger)')
+                  : 'var(--surface)',
+                color: showFeedback
+                  ? 'var(--on-primary)'
+                  : 'var(--text)',
+                opacity: showFeedback ? 0.2 : 1,
+              }}
+              onFocus={(e) => {
+                if (!showFeedback) {
+                  e.currentTarget.style.borderColor = 'var(--ring)';
+                }
+              }}
+              onBlur={(e) => {
+                if (!showFeedback) {
+                  e.currentTarget.style.borderColor = 'var(--outline)';
+                }
+              }}
             />
              {showFeedback && !isCorrect && (
-              <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              <div className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>
                 <span className="font-bold">参考答案:</span> {question.answer.expected_answers?.join(" / ") || "请查看解析"}
               </div>
             )}
