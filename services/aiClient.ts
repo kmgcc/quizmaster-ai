@@ -33,9 +33,9 @@ export interface StreamChatPayload {
 }
 
 /**
- * 流式响应回调
+ * 流式响应回调（snapshot 模式：传递到目前为止的全文）
  */
-export type OnDeltaCallback = (delta: string) => void;
+export type OnSnapshotCallback = (snapshot: string) => void;
 
 /**
  * 清理消息内容，移除可能导致 JSON 解析错误的字符
@@ -116,11 +116,11 @@ function safeStringify(obj: any): string {
 }
 
 /**
- * 流式聊天接口
+ * 流式聊天接口（snapshot 模式）
  */
 export async function streamChat(
   payload: StreamChatPayload,
-  onDelta: OnDeltaCallback
+  onSnapshot: OnSnapshotCallback
 ): Promise<void> {
   const apiKey = localStorage.getItem('qb_api_key');
   if (!apiKey) {
@@ -180,28 +180,53 @@ export async function streamChat(
   }
 
   const decoder = new TextDecoder();
-  let buffer = '';
+  let sseBuffer = ''; // SSE 行缓冲
+  let contentBuffer = ''; // 累积的完整内容（snapshot）
+  let lastSnapshotTime = 0; // 上次调用 onSnapshot 的时间（用于节流）
+  let pendingSnapshotTimer: number | null = null; // 待执行的 snapshot 调用
+
+  // 轻量节流：每 16-33ms 最多调用一次 onSnapshot
+  const scheduleSnapshot = () => {
+    if (pendingSnapshotTimer !== null) return; // 已有待执行的调用
+    
+    const now = Date.now();
+    const timeSinceLastCall = now - lastSnapshotTime;
+    const throttleDelay = Math.max(0, 16 - timeSinceLastCall); // 目标间隔 16ms
+    
+    pendingSnapshotTimer = window.setTimeout(() => {
+      onSnapshot(contentBuffer);
+      lastSnapshotTime = Date.now();
+      pendingSnapshotTimer = null;
+    }, throttleDelay);
+  };
 
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // 保留最后一个不完整的行
+      sseBuffer += decoder.decode(value, { stream: true });
+      const lines = sseBuffer.split('\n');
+      sseBuffer = lines.pop() || ''; // 保留最后一个不完整的行
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
           if (data === '[DONE]') {
+            // 流结束：取消待执行的节流调用，立即触发最后一次 snapshot
+            if (pendingSnapshotTimer !== null) {
+              clearTimeout(pendingSnapshotTimer);
+              pendingSnapshotTimer = null;
+            }
+            onSnapshot(contentBuffer); // 确保完整内容
             return;
           }
           try {
             const json = JSON.parse(data);
             const delta = json.choices?.[0]?.delta?.content || '';
             if (delta) {
-              onDelta(delta);
+              contentBuffer += delta; // 累积到 buffer
+              scheduleSnapshot(); // 节流调用 onSnapshot
             }
           } catch (e) {
             // 忽略解析错误
@@ -209,7 +234,16 @@ export async function streamChat(
         }
       }
     }
+    
+    // 流正常结束（非 [DONE]）：确保最后一次 snapshot
+    if (pendingSnapshotTimer !== null) {
+      clearTimeout(pendingSnapshotTimer);
+    }
+    onSnapshot(contentBuffer);
   } finally {
+    if (pendingSnapshotTimer !== null) {
+      clearTimeout(pendingSnapshotTimer);
+    }
     reader.releaseLock();
   }
 }
@@ -284,11 +318,11 @@ function buildSystemPrompt(payload: StreamChatPayload): string {
 }
 
 /**
- * Mock 流式 AI（用于测试，模拟流式输出）
+ * Mock 流式 AI（用于测试，模拟流式输出，snapshot 模式）
  */
 export async function mockStreamChat(
   payload: StreamChatPayload,
-  onDelta: OnDeltaCallback
+  onSnapshot: OnSnapshotCallback
 ): Promise<void> {
   // 模拟 AI 回复
   const mockResponse = `你好！关于这道题，我来为你详细解释一下。
@@ -321,22 +355,25 @@ function example() {
 
 希望这个解释对你有帮助！如果还有疑问，随时问我。`;
 
-  // 模拟流式输出（优化：批量输出，减少延迟）
+  // 模拟流式输出（snapshot 模式：每次传递到目前为止的全文）
   const words = mockResponse.split('');
-  let index = 0;
+  let contentBuffer = '';
   
   // 使用更快的输出速度（每批输出多个字符）
   const batchSize = 3; // 每次输出3个字符
   const delay = 10; // 每批延迟10ms，整体更快
   
-  while (index < words.length) {
+  for (let index = 0; index < words.length; index += batchSize) {
     const batch = words.slice(index, index + batchSize).join('');
-    onDelta(batch);
-    index += batchSize;
+    contentBuffer += batch; // 累积到 buffer
+    onSnapshot(contentBuffer); // 传递 snapshot（到目前为止的全文）
     
-    if (index < words.length) {
+    if (index + batchSize < words.length) {
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
+  
+  // 确保最后一次完整 snapshot
+  onSnapshot(contentBuffer);
 }
 

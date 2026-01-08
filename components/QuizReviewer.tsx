@@ -4,6 +4,35 @@ import { ChatDrawer } from './ChatDrawer';
 import { highlightCode } from '../utils/codeHighlighter';
 import { BankMeta, QuestionContext } from '../services/aiClient';
 
+// Media query hook for dock mode detection
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia(query).matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const mediaQuery = window.matchMedia(query);
+    const handler = (event: MediaQueryListEvent) => setMatches(event.matches);
+    
+    // Modern browsers
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handler);
+      return () => mediaQuery.removeListener(handler);
+    }
+  }, [query]);
+
+  return matches;
+}
+
 // Markdown rendering helper (simplified for review)
 const renderMarkdownText = (text: string): React.ReactNode => {
   const parts: React.ReactNode[] = [];
@@ -158,6 +187,11 @@ export const QuizReviewer: React.FC<Props> = ({
   onChatHistoryUpdate
 }) => {
   const [chatQuestion, setChatQuestion] = useState<{q: Question, r: UserResponse} | null>(null);
+  
+  // Media query for dock mode detection
+  const isWide = useMediaQuery('(min-width: 1100px)');
+  const isChatOpen = !!chatQuestion;
+  const isDocked = isChatOpen && isWide;
 
   const handleChatHistoryUpdate = (questionId: string, history: ChatMessage[]) => {
     if (onChatHistoryUpdate) {
@@ -173,19 +207,16 @@ export const QuizReviewer: React.FC<Props> = ({
   const totalQuestions = questionsToRender.length;
   const score = totalQuestions > 0 ? Math.round((relevantResponses.reduce((acc, curr) => acc + curr.score, 0) / totalQuestions) * 100) : 0;
 
-  // Determine if we are in "AI Chat Mode"
-  const isChatOpen = !!chatQuestion;
-
   // Count notes for summary
   const notesCount = questionsToRender.filter(q => session.responses[q.id]?.annotation).length;
 
   return (
-    <div className={`flex flex-col md:flex-row gap-6 md:gap-0 pb-4 w-full min-h-screen transition-all duration-500 min-w-0`}>
+    <div className="flex gap-4 pb-4 w-full min-h-screen transition-all duration-500 min-w-0">
       {/* Left Column: Summary */}
-      {/* Logic: Hide this column completely on desktop when chat is open OR if in Interim Mode */}
+      {/* Logic: Hide this column completely when chat is open OR if in Interim Mode */}
       {!isChatOpen && !isInterim && (
-        <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-6 md:mr-8 md:sticky md:top-16 md:self-start animate-fade-in">
-            <div className="bg-white/60 dark:bg-white/5 p-8 rounded-3xl shadow-sm border border-black/5 dark:border-white/10 text-center relative overflow-hidden transition-colors backdrop-blur-sm">
+        <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-6 md:mr-8 md:sticky md:top-[calc(var(--topbar-h,64px)+16px)] md:self-start animate-fade-in mt-2">
+            <div className="bg-white/45 dark:bg-white/5 p-8 rounded-3xl shadow-sm border border-black/5 dark:border-white/10 text-center relative overflow-hidden transition-colors backdrop-blur-md">
                 <div className={`absolute top-0 left-0 w-full h-2 bg-${themeColor}-500`}></div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">练习回顾</h2>
                 <p className="text-xs text-slate-400 mb-6">{new Date(session.startTime).toLocaleString()}</p>
@@ -237,8 +268,8 @@ export const QuizReviewer: React.FC<Props> = ({
       )}
 
       {/* Middle Column: Details List */}
-      {/* Logic: Takes full width available. If chat open, it shares space with chat column. */}
-      <div className={`flex-1 flex flex-col relative min-w-0`}>
+      {/* Logic: Takes full width available. If chat open, it shares space with spacer. */}
+      <div className="flex-1 min-w-0 flex flex-col relative overflow-x-hidden">
         {/* Interim Header */}
         {isInterim && (
            <div className="mb-4 flex items-center justify-between">
@@ -249,7 +280,7 @@ export const QuizReviewer: React.FC<Props> = ({
            </div>
         )}
 
-        <div className={`space-y-4 ${isChatOpen ? 'md:pr-0' : 'md:pr-2'} pt-16 pb-24 transition-all duration-500 min-w-0 overflow-x-hidden`}>
+        <div className={`space-y-4 ${isChatOpen ? 'md:pr-0' : 'md:pr-2'} pt-4 pb-24 transition-all duration-500 min-w-0 overflow-x-hidden ${isDocked ? 'break-words' : ''}`}>
           {/* Notes Summary Section - Only show in final review (not interim) if there are notes */}
           {!isInterim && notesCount > 0 && (
             <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 p-6 rounded-2xl border-2 border-yellow-200 dark:border-yellow-800/30 shadow-sm">
@@ -439,7 +470,7 @@ export const QuizReviewer: React.FC<Props> = ({
 
         {/* Interim Continue Button */}
         {isInterim && onContinue && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/60 dark:bg-gray-950/60 backdrop-blur-sm border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/45 dark:bg-zinc-900/35 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up">
               <button 
                 onClick={onContinue}
                 className={`px-12 py-3 bg-${themeColor}-600 hover:bg-${themeColor}-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-${themeColor}-200 dark:shadow-none transition transform active:scale-95 flex items-center gap-2`}
@@ -453,8 +484,12 @@ export const QuizReviewer: React.FC<Props> = ({
         )}
       </div>
 
-      {/* Right Column: AI Chat Interface (Inline) */}
-      {/* Logic: Only renders when chat is open. Uses fixed width on desktop. */}
+      {/* Right Spacer: Reserved space for AI Chat Window - Only show when docked */}
+      {isDocked && (
+        <div className="w-[480px] shrink-0" />
+      )}
+      
+      {/* AI Chat Window - Rendered via Portal in ChatDrawer */}
       {chatQuestion && (() => {
         const q = chatQuestion.q;
         const resp = chatQuestion.r;
@@ -488,21 +523,19 @@ export const QuizReviewer: React.FC<Props> = ({
         }
         
         return (
-          <div className="w-full md:w-[400px] shrink-0 min-w-0 h-[500px] md:h-auto border-t md:border-t-0 md:border-l border-slate-200 dark:border-white/10 bg-white dark:bg-gray-900 md:bg-transparent animate-slide-in-right z-20 md:z-auto fixed bottom-0 left-0 right-0 md:static overflow-hidden">
-            <ChatDrawer 
-              isOpen={!!chatQuestion} 
-              onClose={() => setChatQuestion(null)}
-              question={q}
-              userResponse={resp}
-              themeColor={themeColor}
-              aiSettings={aiSettings}
-              inline={true}
-              onChatHistoryUpdate={handleChatHistoryUpdate}
-              bankMeta={bankMeta}
-              questionContext={questionContext}
-              bankId={bank.id}
-            />
-          </div>
+          <ChatDrawer 
+            isOpen={!!chatQuestion} 
+            onClose={() => setChatQuestion(null)}
+            question={q}
+            userResponse={resp}
+            themeColor={themeColor}
+            aiSettings={aiSettings}
+            inline={false}
+            onChatHistoryUpdate={handleChatHistoryUpdate}
+            bankMeta={bankMeta}
+            questionContext={questionContext}
+            bankId={bank.id}
+          />
         );
       })()}
     </div>

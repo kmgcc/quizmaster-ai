@@ -306,7 +306,10 @@ const App: React.FC = () => {
     >
       
       {/* Header with Glassmorphism */}
-      <header className="fixed top-0 left-0 right-0 z-50 w-full glass-header backdrop-blur-sm bg-white/60 dark:bg-zinc-900/50 border-b border-black/5 dark:border-white/10 transition-colors duration-300">
+      <header 
+        className="fixed top-0 left-0 right-0 z-50 w-full glass-header backdrop-blur-md bg-white/30 dark:bg-zinc-900/25 border-b border-black/5 dark:border-white/10 transition-colors duration-300"
+        style={{ ['--topbar-h' as any]: '64px' }}
+      >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setView('home')}>
             <img src={logoSrc} alt="QuizMaster AI" className="w-8 h-8 rounded-lg shadow-lg object-cover transition-all duration-300 group-hover:scale-110" />
@@ -327,7 +330,7 @@ const App: React.FC = () => {
                 </button>
                 
                 {showSettings && (
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-xl shadow-2xl border border-black/5 dark:border-white/10 p-4 z-50 animate-fade-in-down ring-1 ring-black/5">
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-xl shadow-2xl border border-black/10 dark:border-white/10 p-4 z-50 animate-fade-in-down ring-1 ring-black/5">
                     {/* Theme Mode Toggle */}
                     <div className="mb-4">
                        <p className="text-xs font-bold text-slate-400 uppercase mb-2">显示模式</p>
@@ -399,7 +402,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content - Allow scrolling under header */}
-      <main className="max-w-7xl mx-auto px-4 py-8 pt-16 relative z-10">
+      <main className="max-w-7xl mx-auto px-4 py-8 pt-[calc(var(--topbar-h,64px)+16px)] relative z-10">
         {view === 'home' && (
           <BankManager 
             banks={banks} 
@@ -447,8 +450,8 @@ const App: React.FC = () => {
 
       {/* API Key Config Modal */}
       {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border border-slate-100 dark:border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
+          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border border-black/10 dark:border-white/10">
             <div className={`p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-${themeColor}-600 text-white rounded-t-2xl`}>
               <h3 className="text-lg font-bold">🔑 API Key 配置</h3>
               <button onClick={() => setShowApiKeyModal(false)} className="text-white/80 hover:text-white">
@@ -512,8 +515,8 @@ const App: React.FC = () => {
 
       {/* AI Config Modal */}
       {showAiConfigModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border border-slate-100 dark:border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
+          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border border-black/10 dark:border-white/10">
             <div className={`p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-${themeColor}-600 text-white rounded-t-2xl`}>
               <h3 className="text-lg font-bold">AI 助教设置</h3>
               <button onClick={() => setShowAiConfigModal(false)} className="text-white/80 hover:text-white">

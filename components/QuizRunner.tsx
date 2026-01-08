@@ -364,9 +364,9 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, themeCol
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100vh-100px)] flex gap-6">
+    <div className="w-full h-[calc(100vh-100px)] flex gap-6 mt-2">
        {/* Left Sidebar: Question Map */}
-       <div className="hidden md:flex flex-col w-80 max-w-xs bg-white/60 dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/10 shadow-sm overflow-hidden shrink-0 transition-colors backdrop-blur-sm">
+       <div className="hidden md:flex flex-col w-80 max-w-xs bg-white/45 dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/10 shadow-sm overflow-hidden shrink-0 transition-colors backdrop-blur-md">
           <div className="p-5 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20">
              <h3 className="font-bold text-slate-800 dark:text-slate-100">题目列表</h3>
              <p className="text-xs text-slate-400 mt-1 truncate">{bank.title}</p>

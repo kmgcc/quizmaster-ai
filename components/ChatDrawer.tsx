@@ -1,9 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Question, UserResponse, ChatMessage, AISettings } from '../types';
 import { streamChat, mockStreamChat, QuestionContext, BankMeta } from '../services/aiClient';
 import { highlightCode } from '../utils/codeHighlighter';
+
+// 统一聊天窗口宽度常量
+const DOCK_W = 480;
+
+// Media query hook for dock mode detection
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia(query).matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const mediaQuery = window.matchMedia(query);
+    const handler = (event: MediaQueryListEvent) => setMatches(event.matches);
+    
+    // Modern browsers
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handler);
+      return () => mediaQuery.removeListener(handler);
+    }
+  }, [query]);
+
+  return matches;
+}
 
 interface Props {
   isOpen: boolean;
@@ -43,25 +76,17 @@ const CodeBlock: React.FC<{ code: string; lang: string }> = ({ code, lang }) => 
   );
 };
 
-// 用户消息组件（纯文本）
+// 用户消息组件（纯文本，不走 Markdown）
 const UserMessage: React.FC<{ text: string }> = ({ text }) => {
   return (
-    <pre className="whitespace-pre-wrap text-sm leading-relaxed font-normal">
+    <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
       {text}
-    </pre>
+    </div>
   );
 };
 
-// AI 消息组件（Markdown 渲染）
-const AIMessage: React.FC<{ text: string; status?: 'streaming' | 'done' | 'error' }> = ({ text, status }) => {
-  if (status === 'error') {
-    return (
-      <div className="text-sm text-red-600 dark:text-red-400">
-        {text || 'AI 回复失败'}
-      </div>
-    );
-  }
-
+// AI 消息 Markdown 渲染组件（成熟稳定实现）
+const MarkdownRenderer: React.FC<{ text: string }> = ({ text }) => {
   return (
     <div className="text-sm leading-relaxed prose prose-slate dark:prose-invert max-w-none">
       <ReactMarkdown
@@ -83,35 +108,46 @@ const AIMessage: React.FC<{ text: string; status?: 'streaming' | 'done' | 'error
               </code>
             );
           },
-          // 表格样式
-          table({ children }: any) {
+          // 表格样式 - 支持 GitHub 风格表格（GFM）
+          table({ node, ...props }: any) {
             return (
-              <div className="overflow-x-auto my-4">
-                <table className="min-w-full border-collapse border border-slate-300 dark:border-slate-700">
-                  {children}
-                </table>
-            </div>
-         );
+              <div className="my-3 overflow-x-auto">
+                <table className="min-w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" {...props} />
+              </div>
+            );
           },
-          thead({ children }: any) {
-            return <thead className="bg-slate-50 dark:bg-slate-800">{children}</thead>;
+          thead({ ...props }: any) {
+            return <thead className="bg-slate-50 dark:bg-slate-800/60" {...props} />;
           },
-          tbody({ children }: any) {
-            return <tbody>{children}</tbody>;
+          tbody({ ...props }: any) {
+            return <tbody {...props} />;
           },
-          tr({ children }: any) {
-            return <tr className="border-b border-slate-200 dark:border-slate-700">{children}</tr>;
-          },
-          th({ children }: any) {
+          tr({ children, ...props }: any) {
             return (
-              <th className="px-4 py-2 text-left font-bold text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700">
+              <tr 
+                className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 even:bg-slate-50/40 dark:even:bg-slate-800/30"
+                {...props}
+              >
+                {children}
+              </tr>
+            );
+          },
+          th({ children, ...props }: any) {
+            return (
+              <th 
+                className="px-3 py-2 text-left font-semibold border-b border-slate-200 dark:border-slate-700 whitespace-nowrap text-slate-900 dark:text-slate-100"
+                {...props}
+              >
                 {children}
               </th>
             );
           },
-          td({ children }: any) {
+          td({ children, ...props }: any) {
             return (
-              <td className="px-4 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+              <td 
+                className="px-3 py-2 border-t border-slate-200 dark:border-slate-700 align-top text-slate-700 dark:text-slate-300"
+                {...props}
+              >
                 {children}
               </td>
             );
@@ -155,8 +191,22 @@ const AIMessage: React.FC<{ text: string; status?: 'streaming' | 'done' | 'error
       >
         {text}
       </ReactMarkdown>
-            </div>
-        );
+    </div>
+  );
+};
+
+// AI 消息组件（Markdown 渲染）
+const AIMessage: React.FC<{ text: string; status?: 'streaming' | 'done' | 'error' }> = ({ text, status }) => {
+  if (status === 'error') {
+    return (
+      <div className="text-sm text-red-600 dark:text-red-400">
+        {text || 'AI 回复失败'}
+      </div>
+    );
+  }
+
+  // 直接使用原始文本，不做任何预处理
+  return <MarkdownRenderer text={text} />;
 };
 
 export const ChatDrawer: React.FC<Props> = ({ 
@@ -172,14 +222,16 @@ export const ChatDrawer: React.FC<Props> = ({
   questionContext: providedContext,
   bankId
 }) => {
+  // Media query for dock mode detection
+  const isWide = useMediaQuery('(min-width: 1100px)');
+  const isDocked = isOpen && isWide && !inline;
+
   const [history, setHistory] = useState<ExtendedChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const shouldAutoScroll = useRef(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const streamBufferRef = useRef<string>(''); // 流式输出缓冲区
-  const streamUpdateTimerRef = useRef<number | null>(null); // 批量更新定时器
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // 构建题目上下文
@@ -275,54 +327,6 @@ export const ChatDrawer: React.FC<Props> = ({
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 组件卸载时清理定时器
-  useEffect(() => {
-    return () => {
-      if (streamUpdateTimerRef.current) {
-        cancelAnimationFrame(streamUpdateTimerRef.current);
-        streamUpdateTimerRef.current = null;
-      }
-    };
-  }, []);
-
-  // 批量更新流式消息（优化性能，减少重渲染）
-  const flushStreamBuffer = () => {
-    if (streamBufferRef.current) {
-      const delta = streamBufferRef.current;
-      streamBufferRef.current = '';
-      
-      setHistory(prev => {
-        const updated = [...prev];
-        const lastMsg = updated[updated.length - 1];
-        if (lastMsg && lastMsg.role === 'model' && lastMsg.status === 'streaming') {
-          // 移除之前的●，添加新内容，再在末尾添加●
-          const currentText = lastMsg.text.endsWith('●') 
-            ? lastMsg.text.slice(0, -1) 
-            : lastMsg.text;
-          lastMsg.text = currentText + delta + '●';
-        }
-        return updated;
-      });
-    }
-    
-    if (streamUpdateTimerRef.current) {
-      cancelAnimationFrame(streamUpdateTimerRef.current);
-      streamUpdateTimerRef.current = null;
-    }
-  };
-
-  // 添加流式 delta 到缓冲区
-  const appendStreamDelta = (delta: string) => {
-    streamBufferRef.current += delta;
-    
-    // 使用 requestAnimationFrame 批量更新，减少重渲染
-    if (!streamUpdateTimerRef.current) {
-      streamUpdateTimerRef.current = requestAnimationFrame(() => {
-        flushStreamBuffer();
-        streamUpdateTimerRef.current = null;
-      });
-    }
-  };
 
   // 发送消息
   const sendMessage = async (text: string) => {
@@ -352,7 +356,6 @@ export const ChatDrawer: React.FC<Props> = ({
     
     const streamingHistory = [...newHistory, aiMsg];
     setHistory(streamingHistory);
-    streamBufferRef.current = ''; // 清空缓冲区
 
     try {
       // 构建消息历史（只包含 user/assistant，不包含 system）
@@ -383,9 +386,16 @@ export const ChatDrawer: React.FC<Props> = ({
             messages: [...apiHistory, { role: 'user', content: text.trim() }],
             aiSettings
           },
-          (delta: string) => {
-            // 使用批量更新优化性能
-            appendStreamDelta(delta);
+          (snapshot: string) => {
+            // snapshot 覆盖更新：直接覆盖最后一条 streaming 消息的文本
+            setHistory(prev => {
+              const updated = [...prev];
+              const lastMsg = updated[updated.length - 1];
+              if (lastMsg && lastMsg.role === 'model' && lastMsg.status === 'streaming') {
+                lastMsg.text = snapshot + '●';
+              }
+              return updated;
+            });
           }
         );
       } else {
@@ -397,15 +407,19 @@ export const ChatDrawer: React.FC<Props> = ({
             messages: [...apiHistory, { role: 'user', content: text.trim() }],
             aiSettings
           },
-          (delta: string) => {
-            // 使用批量更新优化性能
-            appendStreamDelta(delta);
+          (snapshot: string) => {
+            // snapshot 覆盖更新：直接覆盖最后一条 streaming 消息的文本
+            setHistory(prev => {
+              const updated = [...prev];
+              const lastMsg = updated[updated.length - 1];
+              if (lastMsg && lastMsg.role === 'model' && lastMsg.status === 'streaming') {
+                lastMsg.text = snapshot + '●';
+              }
+              return updated;
+            });
           }
         );
       }
-      
-      // 流式完成前，确保缓冲区内容已刷新
-      flushStreamBuffer();
 
       // 流式完成，移除末尾的●并更新状态
       setHistory(prev => {
@@ -499,72 +513,58 @@ export const ChatDrawer: React.FC<Props> = ({
 
   if (!isOpen) return null;
 
-  // Inline vs Modal Mode
-  const wrapper = (children: React.ReactNode) => {
-    if (inline) {
-      return (
-        <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 transition-colors">
-           {children}
-        </div>
-      );
-    }
-      return (
-          <div className="fixed inset-0 z-50 flex justify-end">
-              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose}></div>
-              <div className="relative w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col animate-slide-in-right transition-colors">
-                {children}
-              </div>
-          </div>
-      );
-  };
-
-  return wrapper(
-      <>
-        {/* Header */}
-        <div className={`p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center ${inline ? 'bg-white dark:bg-slate-900' : `bg-${themeColor}-600 text-white`}`}>
-          <div>
-          <h3 className={`font-bold ${inline ? 'text-slate-800 dark:text-slate-100' : ''}`}>
+  // Shared panel content structure (used by both Dock and Overlay modes)
+  const renderPanelContent = () => (
+    <>
+      {/* Header - Absolute overlay with glassmorphism */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-4 border-b border-slate-100/50 dark:border-white/10 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-slate-900/30">
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-slate-100">
             {aiSettings?.roleName || 'AI 助教'}
           </h3>
-          <p className={`text-xs ${inline ? 'text-slate-400' : `text-${themeColor}-100`}`}>
+          <p className="text-xs text-slate-400">
             正在讨论第 {question.id} 题
           </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {history.length > 0 && (
-              <button 
-                onClick={clearChatHistory} 
-                className={`p-2 rounded-full transition ${inline ? 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-red-500' : `hover:bg-${themeColor}-700`}`}
-                title="清除聊天记录"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            )}
+        </div>
+        <div className="flex items-center gap-2">
+          {history.length > 0 && (
+            <button 
+              onClick={clearChatHistory} 
+              className="p-2 rounded-full transition hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-400 hover:text-red-500"
+              title="清除聊天记录"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
           <button 
             onClick={onClose} 
-            className={`p-2 rounded-full transition ${inline ? 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400' : `hover:bg-${themeColor}-700`}`}
+            className="p-2 rounded-full transition hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-400"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          </div>
         </div>
+      </div>
 
-        {/* Messages */}
+      {/* Messages - Scrollable area with padding to avoid header/footer */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950 transition-colors"
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950 transition-colors z-0"
+        style={{
+          paddingTop: '72px',
+          paddingBottom: '180px'
+        }}
       >
-          {history.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[92%] rounded-2xl p-3 text-sm shadow-sm ${
-                msg.role === 'user' 
-                  ? `bg-${themeColor}-600 text-white rounded-br-none` 
-                  : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none'
-              }`}>
+        {history.map((msg, idx) => (
+          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[92%] rounded-2xl p-3 text-sm shadow-sm ${
+              msg.role === 'user' 
+                ? `bg-${themeColor}-600 text-white rounded-br-none` 
+                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none'
+            }`}>
               {msg.role === 'user' ? (
                 <UserMessage text={msg.text} />
               ) : (
@@ -581,50 +581,50 @@ export const ChatDrawer: React.FC<Props> = ({
                 </>
               )}
             </div>
-            </div>
-          ))}
+          </div>
+        ))}
         {loading && history.length > 0 && history[history.length - 1].status !== 'streaming' && (
-            <div className="flex justify-start">
-               <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-bl-none border border-slate-200 dark:border-slate-700 shadow-sm flex gap-1">
-                 <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                 <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100"></span>
-                 <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></span>
-               </div>
+          <div className="flex justify-start">
+            <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-bl-none border border-slate-200 dark:border-slate-700 shadow-sm flex gap-1">
+              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100"></span>
+              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></span>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Input Area */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
+      {/* Footer - Absolute overlay with glassmorphism (includes preset prompts and input) */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 p-4 border-t border-slate-100/50 dark:border-white/10 backdrop-blur-md bg-white/30 dark:bg-slate-900/30">
         {/* Preset Prompts */}
-          {!loading && (
-              <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
-                  <button 
-                    onClick={() => sendMessage("这题怎么做？")}
-                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-${themeColor}-50 dark:bg-${themeColor}-900/30 text-${themeColor}-600 dark:text-${themeColor}-300 border border-${themeColor}-100 dark:border-${themeColor}-800 hover:bg-${themeColor}-100 dark:hover:bg-${themeColor}-900/50 transition`}
-                  >
-                    ✨ 这题怎么做？
-                  </button>
-                  <button 
-                    onClick={() => sendMessage("请解释一下这个知识点")}
-                    className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-                  >
-                    📖 解释知识点
-                  </button>
-                  <button 
-                    onClick={() => sendMessage("给一个相关的代码示例")}
-                    className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-                  >
-                    💻 代码示例
-                  </button>
-              </div>
-          )}
-          
+        {!loading && (
+          <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+            <button 
+              onClick={() => sendMessage("这题怎么做？")}
+              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-${themeColor}-50 dark:bg-${themeColor}-900/30 text-${themeColor}-600 dark:text-${themeColor}-300 border border-${themeColor}-100 dark:border-${themeColor}-800 hover:bg-${themeColor}-100 dark:hover:bg-${themeColor}-900/50 transition`}
+            >
+              ✨ 这题怎么做？
+            </button>
+            <button 
+              onClick={() => sendMessage("请解释一下这个知识点")}
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            >
+              📖 解释知识点
+            </button>
+            <button 
+              onClick={() => sendMessage("给一个相关的代码示例")}
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            >
+              💻 代码示例
+            </button>
+          </div>
+        )}
+        
         <div className="flex gap-2 items-end">
           <textarea
             ref={textareaRef}
-              value={input}
+            value={input}
             onChange={e => {
               setInput(e.target.value);
               adjustTextareaHeight();
@@ -635,24 +635,71 @@ export const ChatDrawer: React.FC<Props> = ({
             rows={1}
             className={`flex-1 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-${themeColor}-500 transition-colors bg-white dark:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px]`}
             style={{ height: 'auto' }}
-            />
-            <button 
+          />
+          <button 
             onClick={() => {
               sendMessage(input);
-              // 发送后重置 textarea 高度
               if (textareaRef.current) {
                 textareaRef.current.style.height = 'auto';
               }
             }}
-              disabled={loading || !input.trim()}
+            disabled={loading || !input.trim()}
             className={`bg-${themeColor}-600 hover:bg-${themeColor}-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white p-2 rounded-lg transition shrink-0`}
-            >
-              <svg className="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-              </svg>
-            </button>
-          </div>
+          >
+            <svg className="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+            </svg>
+          </button>
         </div>
-      </>
+      </div>
+    </>
   );
+
+  // Render Dock mode (>=1100px): fixed right, no overlay
+  // Protection: if isOpen && isWide && !inline, MUST use dock mode
+  if (isOpen && isWide && !inline) {
+    const dockPanel = (
+      <div 
+        className="relative w-[480px] flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 transition-colors"
+        style={{
+          position: 'fixed',
+          right: '16px',
+          top: 'calc(var(--topbar-h, 64px) + 16px)',
+          bottom: '16px',
+          zIndex: 100
+        }}
+      >
+        {renderPanelContent()}
+      </div>
+    );
+    return createPortal(dockPanel, document.body);
+  }
+
+  // Render Overlay mode (<1100px): right-aligned with backdrop
+  // Only allowed when NOT wide (width < 1100px)
+  // Panel width limited to leave at least 96px on left side for question content visibility
+  const overlayPanel = (
+    <div className="fixed inset-0 z-50 flex items-start justify-end p-3">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/25"
+        onClick={onClose}
+      />
+      {/* Panel - Right aligned, width limited to show left content */}
+      <div 
+        className="relative flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 transition-colors"
+        style={{
+          position: 'fixed',
+          right: '12px',
+          top: 'calc(var(--topbar-h, 64px) + 16px)',
+          bottom: '16px',
+          width: `min(${DOCK_W}px, calc(100vw - 96px))`,
+          maxHeight: 'calc(100vh - var(--topbar-h, 64px) - 120px)'
+        }}
+      >
+        {renderPanelContent()}
+      </div>
+    </div>
+  );
+  return createPortal(overlayPanel, document.body);
 };

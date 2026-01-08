@@ -157,7 +157,7 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
       {/* Left Sidebar: Actions Panel */}
       <div className="w-full lg:w-80 shrink-0 space-y-6 lg:sticky lg:top-24">
         {/* Changed structure: padding is now on the inner div */}
-        <div className="bg-white/60 dark:bg-white/5 rounded-2xl shadow-sm border border-black/5 dark:border-white/10 overflow-hidden relative transition-colors backdrop-blur-sm">
+        <div className="bg-white/45 dark:bg-white/5 rounded-2xl shadow-sm border border-black/5 dark:border-white/10 overflow-hidden relative transition-colors backdrop-blur-md">
           <div className={`absolute top-0 left-0 w-full h-1 bg-${themeColor}-500 z-10`}></div>
           <div className="p-6">
             <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">题库管理</h2>
@@ -231,7 +231,7 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
         
         {/* Batch Mode Configuration */}
         {banks.length > 0 && (
-          <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl border border-black/5 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors shadow-sm backdrop-blur-sm">
+          <div className="bg-white/45 dark:bg-white/5 p-4 rounded-2xl border border-black/5 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors shadow-sm backdrop-blur-md">
              <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg bg-${themeColor}-50 dark:bg-${themeColor}-500/20 text-${themeColor}-600 dark:text-${themeColor}-300`}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -270,7 +270,7 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
         )}
 
         {banks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white/60 dark:bg-white/5 rounded-3xl border-2 border-dashed border-black/5 dark:border-white/10 text-center transition-colors backdrop-blur-sm">
+          <div className="flex flex-col items-center justify-center py-24 bg-white/45 dark:bg-white/5 rounded-3xl border-2 border-dashed border-black/5 dark:border-white/10 text-center transition-colors backdrop-blur-md">
             <div className={`w-16 h-16 bg-${themeColor}-50 dark:bg-${themeColor}-500/20 text-${themeColor}-200 dark:text-${themeColor}-300 rounded-full flex items-center justify-center mb-4`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -286,7 +286,7 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
               const lastScore = bankSessions.length > 0 ? bankSessions[0].totalScore : null;
 
               return (
-                <div key={bank.id} className="group relative bg-white/60 dark:bg-white/5 rounded-2xl shadow-sm border border-black/5 dark:border-white/10 transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-sm">
+                <div key={bank.id} className="group relative bg-white/45 dark:bg-white/5 rounded-2xl shadow-sm border border-black/5 dark:border-white/10 transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-md">
                    {/* Spotlight Overlay */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
                     style={{
@@ -397,8 +397,8 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* Paste Modal */}
       {showPasteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-slate-100 dark:border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
+          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-black/10 dark:border-white/10">
             <div className="p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
               <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">粘贴 JSON 内容</h3>
@@ -439,8 +439,8 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* Format Spec Modal */}
       {showFormatModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-slate-100 dark:border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
+          <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-black/10 dark:border-white/10">
              <div className="p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">题库格式规范 (Schema V2)</h3>
@@ -471,8 +471,8 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* History List Modal */}
       {historyModalBankId && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-           <div className="bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-slate-100 dark:border-white/10">
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
+           <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border border-black/10 dark:border-white/10">
              <div className="p-5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">练习记录</h3>
                <button onClick={() => setHistoryModalBankId(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
@@ -514,8 +514,8 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmBankId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl w-full max-w-sm flex flex-col transition-colors border border-slate-100 dark:border-white/10 p-6 text-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 animate-fade-in">
+            <div className="bg-white/45 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-sm flex flex-col transition-colors border border-black/10 dark:border-white/10 p-6 text-center">
               <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
