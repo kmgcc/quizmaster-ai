@@ -275,11 +275,11 @@ export const QuizReviewer: React.FC<Props> = ({
   const notesCount = questionsToRender.filter(q => session.responses[q.id]?.annotation).length;
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 w-full min-h-0 h-screen min-w-0 overflow-hidden">
+    <div className="flex flex-col md:flex-row gap-4 w-full h-full min-h-0 min-w-0 overflow-hidden">
       {/* Left Column: Summary - Desktop Only (md+) */}
       {/* Logic: Hide this column completely when chat is open OR if in Interim Mode */}
       {!isChatOpen && !isInterim && (
-        <div className="hidden md:block md:w-72 lg:w-80 shrink-0 space-y-6 md:mr-8 md:sticky md:top-[calc(var(--topbar-h,64px)+8px)] md:self-start animate-fade-in">
+        <div className="hidden md:block md:w-72 lg:w-80 shrink-0 space-y-6 md:mr-8 md:sticky md:self-start animate-fade-in" style={{ top: 'var(--content-safe-top)' } as React.CSSProperties}>
             <div className="bg-white/45 dark:bg-white/5 p-8 rounded-3xl shadow-sm border border-black/5 dark:border-white/10 text-center relative overflow-hidden transition-colors backdrop-blur-md">
                 <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: 'var(--primary)' }}></div>
                 <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text)' }}>练习回顾</h2>
@@ -510,7 +510,14 @@ export const QuizReviewer: React.FC<Props> = ({
            </div>
         )}
 
-        <div className={`flex-1 min-h-0 space-y-4 ${isChatOpen ? 'md:pr-0' : 'md:pr-2'} md:pt-16 pb-16 transition-all duration-500 min-w-0 overflow-y-auto overflow-x-hidden ${isDocked ? 'break-words' : ''}`}>
+        <div 
+          className={`flex-1 min-h-0 space-y-4 ${isChatOpen ? 'md:pr-0' : 'md:pr-2'} transition-all duration-500 min-w-0 overflow-y-auto overflow-x-hidden ${isDocked ? 'break-words' : ''}`}
+          style={{
+            paddingTop: 'var(--content-safe-top)',
+            paddingBottom: 'var(--content-safe-bottom)',
+            scrollPaddingTop: 'var(--content-safe-top)',
+          } as React.CSSProperties}
+        >
           {/* Mobile top spacer - prevent content from being hidden by floating card */}
           <div className="md:hidden h-40"></div>
           

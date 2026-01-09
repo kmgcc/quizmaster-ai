@@ -362,7 +362,7 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
   };
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] flex gap-6 mt-2">
+    <div className="w-full h-full flex gap-6 pt-2 min-h-0">
        {/* Left Sidebar: Question Map */}
        <div 
          className="hidden md:flex flex-col w-80 max-w-xs rounded-3xl border shadow-sm overflow-hidden shrink-0 transition-colors backdrop-blur-md"

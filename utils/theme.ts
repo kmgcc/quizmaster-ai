@@ -60,7 +60,7 @@ export const themes: Record<ThemePalette, { light: ThemeTokens; dark: ThemeToken
       outline: 'hsl(0, 0%, 85%)',
       text: 'hsl(0, 0%, 10%)',
       muted: 'hsl(0, 0%, 45%)',
-      primary: 'hsl(175, 28%, 40%)',
+      primary: 'hsl(108, 26.10%, 56.50%)',
       onPrimary: 'hsl(0, 0%, 100%)',
       primaryContainer: 'hsl(175, 25%, 92%)',
       onPrimaryContainer: 'hsl(175, 35%, 25%)',
@@ -78,17 +78,17 @@ export const themes: Record<ThemePalette, { light: ThemeTokens; dark: ThemeToken
       ring: 'hsl(175, 28%, 40%)',
     },
     dark: {
-      bg: 'hsl(210, 15%, 8%)',
-      surface: 'hsl(210, 12%, 12%)',
-      surface2: 'hsl(210, 10%, 16%)',
+      bg: 'hsl(0, 2.40%, 4.00%)',
+      surface: 'hsl(210, 1%, 12%)',
+      surface2: 'hsl(210, 0%, 16%)',
       outline: 'hsl(0, 0%, 30%)',
       text: 'hsl(0, 0%, 95%)',
       muted: 'hsl(0, 0%, 60%)',
-      primary: 'hsl(175, 22%, 55%)', // 低饱和，不刺眼
-      onPrimary: 'hsl(0, 0%, 10%)',
-      primaryContainer: 'hsl(175, 20%, 20%)',
-      onPrimaryContainer: 'hsl(175, 25%, 75%)',
-      secondary: 'hsl(200, 15%, 55%)',
+      primary: 'hsl(89, 22.80%, 52.70%)', // 低饱和，不刺眼
+      onPrimary: 'hsl(45, 8.00%, 9.80%)',
+      primaryContainer: 'hsl(46, 28.30%, 23.50%)',
+      onPrimaryContainer: 'hsl(52, 16.60%, 63.30%)',
+      secondary: 'hsl(74, 14.80%, 54.90%)',
       onSecondary: 'hsl(0, 0%, 10%)',
       secondaryContainer: 'hsl(200, 12%, 18%)',
       onSecondaryContainer: 'hsl(200, 18%, 70%)',
@@ -134,7 +134,7 @@ export const themes: Record<ThemePalette, { light: ThemeTokens; dark: ThemeToken
       outline: 'hsl(0, 0%, 30%)',
       text: 'hsl(0, 0%, 95%)',
       muted: 'hsl(0, 0%, 60%)',
-      primary: 'hsl(350, 20%, 58%)',
+      primary: 'hsl(248, 20.00%, 57.80%)',
       onPrimary: 'hsl(0, 0%, 10%)',
       primaryContainer: 'hsl(350, 15%, 20%)',
       onPrimaryContainer: 'hsl(350, 25%, 75%)',
@@ -654,6 +654,57 @@ export const themes: Record<ThemePalette, { light: ThemeTokens; dark: ThemeToken
   },
 };
 
+// 辉光效果颜色生成函数（色彩科学发光）
+// h: 0-360, s/l: 0-100
+function glowFromHSL(h: number, s: number, l: number, { mode = "dark" } = {}): { h: number; s: number; l: number; a: number } {
+  const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
+  const wrap360 = (x: number) => ((x % 360) + 360) % 360;
+  const smoothstep = (e0: number, e1: number, x: number) => {
+    const t = clamp((x - e0) / (e1 - e0), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+
+  // 1) Hue 分区：让"蓝紫附近"更像霓虹，绿区偏黄一点更像荧光，红区偏一点也更自然
+  const hNorm = wrap360(h);
+
+  // "蓝紫拐点窗口"：在 220~276 之间逐渐把偏移方向从 - 转为 +
+  const tPivot = smoothstep(220, 276, hNorm);        // 0->1
+  const shiftAroundPivot = (-14) * (1 - tPivot) + (14) * tPivot;
+
+  // 额外：在绿色段(90~160)让辉光更偏黄一点（更像荧光笔/荧光灯）
+  const tGreen = smoothstep(90, 120, hNorm) * (1 - smoothstep(150, 170, hNorm));
+  const greenWarmShift = 10 * tGreen;               // +0~+10
+
+  // 在红色段(330~30)让辉光略偏洋红/橙，别死盯着原色
+  const nearRed = (hNorm >= 330 || hNorm <= 30) ? 1 : 0;
+  const redShift = nearRed ? 8 : 0;                 // +8°（偏洋红/橙之间）
+
+  let dh = shiftAroundPivot + greenWarmShift + redShift;
+
+  // 2) S/L 因子：越灰越少偏色；越暗越增强辉光"颜色味"
+  const satFactor = clamp((s / 100) ** 0.65, 0.25, 1.2);
+  const lightFactor = clamp(1.15 - (l / 100) * 0.55, 0.55, 1.15);
+  dh *= satFactor * lightFactor;
+
+  // 3) 亮度/饱和提升：深色模式更激进，浅色模式更保守
+  const sBoost = mode === "dark"
+    ? clamp(18 + 22 * (1 - l / 100), 10, 40)
+    : clamp(10 + 14 * (1 - l / 100), 6, 24);
+
+  const lBoost = mode === "dark"
+    ? clamp(14 + 18 * (1 - l / 100), 10, 32)
+    : clamp(8 + 10 * (1 - l / 100), 6, 18);
+
+  const outH = wrap360(hNorm + dh);
+  const outS = clamp(s + sBoost, 0, 100);
+  const outL = clamp(l + lBoost, 0, 100);
+
+  // 4) 你可以把 alpha 也跟 S/L 挂钩：越暗越透明度更高，越灰越低
+  const alpha = clamp(0.18 + 0.22 * (1 - l / 100) + 0.10 * (s / 100), 0.12, 0.55);
+
+  return { h: outH, s: outS, l: outL, a: alpha };
+}
+
 // 应用主题到CSS变量
 export function applyTheme(palette: ThemePalette, isDark: boolean) {
   const theme = themes[palette][isDark ? 'dark' : 'light'];
@@ -689,8 +740,38 @@ export function applyTheme(palette: ThemePalette, isDark: boolean) {
   root.style.setProperty('--ring', theme.ring);
   
   // 为了兼容旧的 spotlight 效果，设置 RGB 值
-  const primaryRgb = hslToRgb(theme.primary);
-  root.style.setProperty('--theme-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
+  // 使用色彩科学发光算法生成辉光效果颜色
+  const primaryHslMatch = theme.primary.match(/hsla?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%(?:,\s*[\d.]+)?\)/);
+  if (primaryHslMatch) {
+    const h = parseFloat(primaryHslMatch[1]);
+    const s = parseFloat(primaryHslMatch[2]);
+    const l = parseFloat(primaryHslMatch[3]);
+    
+    // 使用 glowFromHSL 函数生成增强后的辉光颜色
+    const glowColor = glowFromHSL(h, s, l, { mode: isDark ? "dark" : "light" });
+    
+    // 使用增强后的 HSL 值转换为 RGB（用于辉光效果）
+    const enhancedHsl = `hsl(${glowColor.h}, ${glowColor.s}%, ${glowColor.l}%)`;
+    const primaryRgb = hslToRgb(enhancedHsl);
+    root.style.setProperty('--theme-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
+    
+    // 同时保存原始 HSL 值用于其他用途
+    root.style.setProperty('--primary-h', primaryHslMatch[1]);
+    root.style.setProperty('--primary-s', primaryHslMatch[2]);
+    root.style.setProperty('--primary-l', primaryHslMatch[3]);
+    
+    // 保存增强后的 HSL 值（用于辉光效果）
+    root.style.setProperty('--theme-h', glowColor.h.toString());
+    root.style.setProperty('--theme-s', glowColor.s.toString());
+    root.style.setProperty('--theme-l', glowColor.l.toString());
+    
+    // 保存 alpha 值（可用于调整辉光透明度）
+    root.style.setProperty('--theme-alpha', glowColor.a.toString());
+  } else {
+    // 如果解析失败，使用原始值
+    const primaryRgb = hslToRgb(theme.primary);
+    root.style.setProperty('--theme-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
+  }
   
   // 设置 surface 的 RGB 值（用于 backdrop）
   const surfaceRgb = hslToRgb(theme.surface);
@@ -708,26 +789,34 @@ export function applyTheme(palette: ThemePalette, isDark: boolean) {
 }
 
 // HSL 转 RGB 辅助函数（支持 HSL 和 HSLA）
+// 使用标准的 HSL 转 RGB 算法，确保颜色精确匹配
 function hslToRgb(hsl: string): { r: number; g: number; b: number } {
   // 匹配 hsl() 或 hsla() 格式，忽略透明度
-  const match = hsl.match(/hsla?\((\d+),\s*(\d+)%,\s*(\d+)%(?:,\s*[\d.]+)?\)/);
-  if (!match) return { r: 59, g: 130, b: 246 }; // 默认蓝色
+  const match = hsl.match(/hsla?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%(?:,\s*[\d.]+)?\)/);
+  if (!match) {
+    console.warn('Failed to parse HSL color:', hsl);
+    return { r: 59, g: 130, b: 246 }; // 默认蓝色
+  }
   
-  const h = parseInt(match[1]) / 360;
-  const s = parseInt(match[2]) / 100;
-  const l = parseInt(match[3]) / 100;
+  const h = parseFloat(match[1]) / 360; // 归一化到 0-1
+  const s = parseFloat(match[2]) / 100; // 归一化到 0-1
+  const l = parseFloat(match[3]) / 100; // 归一化到 0-1
   
   let r, g, b;
   
   if (s === 0) {
+    // 无饱和度，是灰度色
     r = g = b = l;
   } else {
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    // HSL 转 RGB 标准算法
+    const hue2rgb = (p: number, q: number, t: number): number => {
+      let normalizedT = t;
+      if (normalizedT < 0) normalizedT += 1;
+      if (normalizedT > 1) normalizedT -= 1;
+      
+      if (normalizedT < 1/6) return p + (q - p) * 6 * normalizedT;
+      if (normalizedT < 1/2) return q;
+      if (normalizedT < 2/3) return p + (q - p) * (2/3 - normalizedT) * 6;
       return p;
     };
     
@@ -738,6 +827,11 @@ function hslToRgb(hsl: string): { r: number; g: number; b: number } {
     g = hue2rgb(p, q, h);
     b = hue2rgb(p, q, h - 1/3);
   }
+  
+  // 确保值在 0-1 范围内，然后转换为 0-255
+  r = Math.max(0, Math.min(1, r));
+  g = Math.max(0, Math.min(1, g));
+  b = Math.max(0, Math.min(1, b));
   
   return {
     r: Math.round(r * 255),

@@ -20,7 +20,7 @@ const App: React.FC = () => {
   const [quizBatchSize, setQuizBatchSize] = useState<number | undefined>(undefined);
   
   // Settings State
-  const [themePalette, setThemePalette] = useState<ThemePalette>('teal_elegant');
+  const [themePalette, setThemePalette] = useState<ThemePalette>('sunlit_yellow');
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const [showSettings, setShowSettings] = useState(false);
   const [showAiConfigModal, setShowAiConfigModal] = useState(false);
@@ -121,6 +121,22 @@ const App: React.FC = () => {
     }
   }, [showSettings]);
 
+  // 锁定页面滚动（仅在答题相关 view）
+  useEffect(() => {
+    const isBoardView = view === 'quiz' || view === 'review';
+    if (!isBoardView) return;
+
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+    };
+  }, [view]);
+
   const saveBanks = (newBanks: QuestionBank[]) => {
     setBanks(newBanks);
     localStorage.setItem('qb_banks', JSON.stringify(newBanks));
@@ -207,17 +223,17 @@ const App: React.FC = () => {
               }
             });
 
-            alert(`✅ 数据导入成功！\n已导入 ${importedCount} 项数据。\n\n页面将刷新以加载新数据。`);
+            alert(`数据导入成功！\n已导入 ${importedCount} 项数据。\n\n页面将刷新以加载新数据。`);
             window.location.reload();
             return;
           }
           
-          alert('❌ 无效的备份文件格式。请使用 QuizMaster AI 导出的备份文件。');
+          alert('无效的备份文件格式。请使用 QuizMaster AI 导出的备份文件。');
           return;
         }
 
         if (!importedData.data) {
-          alert('❌ 备份文件格式无效：缺少 data 字段。');
+          alert('备份文件格式无效：缺少 data 字段。');
           return;
         }
 
@@ -241,11 +257,11 @@ const App: React.FC = () => {
         // 执行导入
         await importBackup(importedData, mode);
 
-        alert(`✅ 数据导入成功！\n\n已导入：\n- ${banksCount} 个题库\n- ${sessionsCount} 条答题记录\n- ${progressCount} 个答题进度\n- ${chatsCount} 个题目的 AI 对话记录\n- AI 设置${hasApiKey ? '（含 API Key）' : ''}\n\n页面将刷新以加载新数据。`);
+        alert(`数据导入成功！\n\n已导入：\n- ${banksCount} 个题库\n- ${sessionsCount} 条答题记录\n- ${progressCount} 个答题进度\n- ${chatsCount} 个题目的 AI 对话记录\n- AI 设置${hasApiKey ? '（含 API Key）' : ''}\n\n页面将刷新以加载新数据。`);
         window.location.reload();
       } catch (err) {
         console.error('Import failed:', err);
-        alert(`❌ 导入失败：${err instanceof Error ? err.message : '请确保文件格式正确'}`);
+        alert(`导入失败：${err instanceof Error ? err.message : '请确保文件格式正确'}`);
       }
     };
     reader.readAsText(file);
@@ -335,13 +351,15 @@ const App: React.FC = () => {
       } as React.CSSProperties}
     >
       
-      {/* Header with Glassmorphism */}
+      {/* Header with Glassmorphism (iOS Safari Compatible) */}
       <header 
-        className="fixed top-0 left-0 right-0 z-50 w-full glass-header backdrop-blur-md border-b transition-colors duration-300"
+        className="fixed top-0 left-0 right-0 z-50 w-full glass glass-header border-b transition-colors duration-300"
         style={{ 
           ['--topbar-h' as any]: '64px',
           backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.3)',
           borderColor: 'var(--outline)',
+          WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+          backdropFilter: 'blur(12px) saturate(150%)',
         } as React.CSSProperties}
       >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative z-10">
@@ -372,150 +390,157 @@ const App: React.FC = () => {
                 {showSettings && settingsPosition && createPortal(
                   <div
                     ref={settingsDropdownRef}
-                    className="fixed w-80 z-[9999] p-4 rounded-xl shadow-2xl border border-white/20 dark:border-white/10 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35 pointer-events-auto"
+                    className="fixed w-80 z-[9999] rounded-xl shadow-2xl border border-white/20 dark:border-white/10 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35 pointer-events-auto overflow-hidden flex flex-col"
                     style={{
                       top: `${settingsPosition.top}px`,
                       right: `${settingsPosition.right}px`,
+                      maxHeight: 'calc(100vh - 96px)',
                       WebkitBackdropFilter: 'blur(24px)',
                       backdropFilter: 'blur(24px)',
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    {/* Theme Mode Toggle */}
-                    <div className="mb-4">
-                       <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>显示模式</p>
-                       <div className="flex rounded-lg p-1" style={{ backgroundColor: 'var(--surface2)' }}>
-                          <button 
-                            onClick={() => handleSetThemeMode('light')} 
-                            className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
-                            style={{
-                              backgroundColor: themeMode === 'light' ? 'var(--primary-container)' : 'transparent',
-                              color: themeMode === 'light' ? 'var(--on-primary-container)' : 'var(--muted)',
-                            }}
-                          >
-                             ☀️ 浅色
-                          </button>
-                          <button 
-                            onClick={() => handleSetThemeMode('dark')} 
-                            className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
-                            style={{
-                              backgroundColor: themeMode === 'dark' ? 'var(--primary-container)' : 'transparent',
-                              color: themeMode === 'dark' ? 'var(--on-primary-container)' : 'var(--muted)',
-                            }}
-                          >
-                             🌙 深色
-                          </button>
-                          <button 
-                            onClick={() => handleSetThemeMode('system')} 
-                            className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
-                            style={{
-                              backgroundColor: themeMode === 'system' ? 'var(--primary-container)' : 'transparent',
-                              color: themeMode === 'system' ? 'var(--on-primary-container)' : 'var(--muted)',
-                            }}
-                          >
-                             🖥️ 跟随
-                          </button>
-                       </div>
-                    </div>
-
-                    {/* Theme Palette Selector */}
-                    <div className="mb-4">
-                      <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>主题配色</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(Object.keys(themes) as ThemePalette[]).map(palette => {
-                          const preview = getThemePreviewColors(palette);
-                          const isSelected = themePalette === palette;
-                          return (
-                            <button
-                              key={palette}
-                              onClick={() => handleSetThemePalette(palette)}
-                              className="relative rounded-lg p-2 transition-all border-2 overflow-hidden"
+                    {/* Header - Fixed at top */}
+                    <div className="p-4 shrink-0 sticky top-0 backdrop-blur-xl bg-white/20 dark:bg-zinc-900/20 border-b border-white/10">
+                      {/* Theme Mode Toggle */}
+                      <div>
+                         <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>显示模式</p>
+                         <div className="flex rounded-lg p-1" style={{ backgroundColor: 'var(--surface2)' }}>
+                            <button 
+                              onClick={() => handleSetThemeMode('light')} 
+                              className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
                               style={{
-                                borderColor: isSelected ? 'var(--primary)' : 'var(--outline)',
-                                backgroundColor: isSelected ? 'var(--primary-container)' : 'var(--surface2)',
+                                backgroundColor: themeMode === 'light' ? 'var(--primary-container)' : 'transparent',
+                                color: themeMode === 'light' ? 'var(--on-primary-container)' : 'var(--muted)',
                               }}
-                              title={getThemeDisplayName(palette)}
                             >
-                              <div className="flex items-center gap-2 mb-1">
-                                <div className="flex gap-1">
-                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.primary }}></div>
-                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.secondary }}></div>
-                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.tertiary }}></div>
-                                  {preview.success && (
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.success }}></div>
-                                  )}
-                                </div>
-                                {isSelected && <span className="text-xs" style={{ color: 'var(--on-primary-container)' }}>✓</span>}
-                              </div>
-                              <div className="text-xs font-medium" style={{ color: isSelected ? 'var(--on-primary-container)' : 'var(--text)' }}>
-                                {getThemeDisplayName(palette)}
-                              </div>
+                               ☀️ 浅色
                             </button>
-                          );
-                        })}
+                            <button 
+                              onClick={() => handleSetThemeMode('dark')} 
+                              className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+                              style={{
+                                backgroundColor: themeMode === 'dark' ? 'var(--primary-container)' : 'transparent',
+                                color: themeMode === 'dark' ? 'var(--on-primary-container)' : 'var(--muted)',
+                              }}
+                            >
+                               ●深色
+                            </button>
+                            <button 
+                              onClick={() => handleSetThemeMode('system')} 
+                              className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+                              style={{
+                                backgroundColor: themeMode === 'system' ? 'var(--primary-container)' : 'transparent',
+                                color: themeMode === 'system' ? 'var(--on-primary-container)' : 'var(--muted)',
+                              }}
+                            >
+                               跟随
+                            </button>
+                         </div>
                       </div>
                     </div>
-                    
-                    <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
-                       <button 
-                         onClick={() => { setShowApiKeyModal(true); setShowSettings(false); }} 
-                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
-                         style={{ color: 'var(--text)' }}
-                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
-                       >
-                          <span className="text-lg">🔑</span> API Key 配置
-                       </button>
-                       <button 
-                         onClick={() => { setShowAiConfigModal(true); setShowSettings(false); }} 
-                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
-                         style={{ color: 'var(--text)' }}
-                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
-                       >
-                          <span className="text-lg">🤖</span> AI 助教设置
-                       </button>
-                    </div>
 
-                    <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
-                       <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>数据管理</p>
-                       <button 
-                         onClick={handleExportAllData} 
-                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
-                         style={{ color: 'var(--text)' }}
-                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
-                       >
-                          <span className="text-lg">💾</span> 导出所有数据
-                       </button>
-                       <input 
-                         type="file" 
-                         accept=".json" 
-                         ref={backupFileInputRef} 
-                         className="hidden" 
-                         onChange={handleImportAllData} 
-                       />
-                       <button 
-                         onClick={() => backupFileInputRef.current?.click()} 
-                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
-                         style={{ color: 'var(--text)' }}
-                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
-                       >
-                          <span className="text-lg">📥</span> 导入备份数据
-                       </button>
-                    </div>
+                    {/* Body - Scrollable content */}
+                    <div className="px-4 pb-4 flex-1 min-h-0 overflow-y-auto border-t border-white/10">
+                      {/* Theme Palette Selector */}
+                      <div className="pt-4 pb-4">
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>主题配色</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(Object.keys(themes) as ThemePalette[]).map(palette => {
+                            const preview = getThemePreviewColors(palette);
+                            const isSelected = themePalette === palette;
+                            return (
+                              <button
+                                key={palette}
+                                onClick={() => handleSetThemePalette(palette)}
+                                className="relative rounded-lg p-2 transition-all border-2 overflow-hidden"
+                                style={{
+                                  borderColor: isSelected ? 'var(--primary)' : 'var(--outline)',
+                                  backgroundColor: isSelected ? 'var(--primary-container)' : 'var(--surface2)',
+                                }}
+                                title={getThemeDisplayName(palette)}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className="flex gap-1">
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.primary }}></div>
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.secondary }}></div>
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.tertiary }}></div>
+                                    {preview.success && (
+                                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preview.success }}></div>
+                                    )}
+                                  </div>
+                                  {isSelected && <span className="text-xs" style={{ color: 'var(--on-primary-container)' }}>✓</span>}
+                                </div>
+                                <div className="text-xs font-medium" style={{ color: isSelected ? 'var(--on-primary-container)' : 'var(--text)' }}>
+                                  {getThemeDisplayName(palette)}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
+                         <button 
+                           onClick={() => { setShowApiKeyModal(true); setShowSettings(false); }} 
+                           className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                           style={{ color: 'var(--text)' }}
+                           onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                         >
+                            <span className="text-lg">🔑</span> API Key 配置
+                         </button>
+                         <button 
+                           onClick={() => { setShowAiConfigModal(true); setShowSettings(false); }} 
+                           className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                           style={{ color: 'var(--text)' }}
+                           onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                         >
+                            <span className="text-lg">✿</span> AI 助教设置
+                         </button>
+                      </div>
 
-                    <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
-                       <button 
-                         onClick={() => { setView('tests'); setShowSettings(false); }} 
-                         className="w-full text-left text-sm font-medium transition flex items-center gap-2"
-                         style={{ color: 'var(--text)' }}
-                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
-                       >
-                          <span className="text-lg">🧪</span> 开发者测试
-                       </button>
+                      <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
+                         <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>数据管理</p>
+                         <button 
+                           onClick={handleExportAllData} 
+                           className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                           style={{ color: 'var(--text)' }}
+                           onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                         >
+                            <span className="text-lg">✞</span> 导出所有数据
+                         </button>
+                         <input 
+                           type="file" 
+                           accept=".json" 
+                           ref={backupFileInputRef} 
+                           className="hidden" 
+                           onChange={handleImportAllData} 
+                         />
+                         <button 
+                           onClick={() => backupFileInputRef.current?.click()} 
+                           className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                           style={{ color: 'var(--text)' }}
+                           onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                         >
+                            <span className="text-lg">♂</span> 导入备份数据
+                         </button>
+                      </div>
+
+                      <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--outline)' }}>
+                         <button 
+                           onClick={() => { setView('tests'); setShowSettings(false); }} 
+                           className="w-full text-left text-sm font-medium transition flex items-center gap-2"
+                           style={{ color: 'var(--text)' }}
+                           onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                         >
+                            <span className="text-lg">✎</span> 开发者测试
+                         </button>
+                      </div>
                     </div>
                   </div>,
                   document.body
@@ -525,55 +550,91 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content - Allow scrolling under header */}
-      <main className={`max-w-7xl mx-auto px-4 relative z-10 ${view === 'review' ? '' : 'py-8 pt-[calc(var(--topbar-h,64px)+16px)]'}`}>
-        {view === 'home' && (
-          <BankManager 
-            banks={banks} 
-            sessions={sessions}
-            onImport={handleImport} 
-            onDelete={handleDelete} 
-            onSelect={startQuiz}
-            onViewHistory={handleViewHistory}
-          />
-        )}
+      {/* Main Content */}
+      {(() => {
+        // review 模式：固定全屏容器，延伸到 banner 下方
+        if (view === 'review') {
+          return (
+            <main 
+              className="fixed inset-0 overflow-hidden z-10"
+              style={{
+                ['--content-safe-top' as any]: 'calc(var(--topbar-h, 64px) + 12px)',
+                ['--content-safe-bottom' as any]: 'max(12px, env(safe-area-inset-bottom, 0px))',
+              } as React.CSSProperties}
+            >
+              <div className="max-w-7xl mx-auto px-4 h-full">
+                {activeSession && activeBank && (
+                  <QuizReviewer 
+                    bank={activeBank}
+                    session={activeSession}
+                    onAnnotationUpdate={handleUpdateAnnotation}
+                    onChatHistoryUpdate={handleUpdateChatHistory}
+                    onRetake={() => startQuiz(activeBank, quizBatchSize)}
+                    onExit={() => setView('home')}
+                    aiSettings={aiSettings}
+                  />
+                )}
+              </div>
+            </main>
+          );
+        }
+        
+        // quiz 模式和其他页面：保持原布局
+        const isQuizView = view === 'quiz';
+        if (isQuizView) {
+          return (
+            <main 
+              className="fixed inset-x-0 overflow-hidden z-10"
+              style={{
+                top: 'calc(var(--topbar-h, 64px) + 16px)',
+                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+              } as React.CSSProperties}
+            >
+              <div className="max-w-7xl mx-auto h-full px-4">
+                {activeBank && (
+                  <QuizRunner 
+                    bank={activeBank} 
+                    onComplete={handleQuizComplete}
+                    onExit={() => setView('home')} 
+                    batchSize={quizBatchSize}
+                    aiSettings={aiSettings}
+                    onAnnotationUpdate={handleUpdateAnnotation}
+                  />
+                )}
+              </div>
+            </main>
+          );
+        }
+        
+        // 首页/测试页：允许页面滚动
+        return (
+          <main className={`max-w-7xl mx-auto px-4 relative z-10 py-8 pt-[calc(var(--topbar-h,64px)+16px)]`}>
+              {view === 'home' && (
+                <BankManager 
+                  banks={banks} 
+                  sessions={sessions}
+                  onImport={handleImport} 
+                  onDelete={handleDelete} 
+                  onSelect={startQuiz}
+                  onViewHistory={handleViewHistory}
+                />
+              )}
 
-        {view === 'quiz' && activeBank && (
-          <QuizRunner 
-            bank={activeBank} 
-            onComplete={handleQuizComplete}
-            onExit={() => setView('home')} 
-            batchSize={quizBatchSize}
-            aiSettings={aiSettings}
-            onAnnotationUpdate={handleUpdateAnnotation}
-          />
-        )}
-
-        {view === 'review' && activeSession && activeBank && (
-          <QuizReviewer 
-            bank={activeBank}
-            session={activeSession}
-            onAnnotationUpdate={handleUpdateAnnotation}
-            onChatHistoryUpdate={handleUpdateChatHistory}
-            onRetake={() => startQuiz(activeBank, quizBatchSize)}
-            onExit={() => setView('home')}
-            aiSettings={aiSettings}
-          />
-        )}
-
-        {view === 'tests' && (
-            <div className="space-y-4">
-                <button 
-                  onClick={() => setView('home')} 
-                  className="underline"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  ← 返回首页
-                </button>
-                <TestRunner />
-            </div>
-        )}
-      </main>
+              {view === 'tests' && (
+                <div className="space-y-4">
+                  <button 
+                    onClick={() => setView('home')} 
+                    className="underline"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    ← 返回首页
+                  </button>
+                  <TestRunner />
+                </div>
+              )}
+            </main>
+          );
+      })()}
 
       {/* API Key Config Modal */}
       {showApiKeyModal && (
@@ -593,7 +654,7 @@ const App: React.FC = () => {
                 borderColor: 'var(--outline)',
               }}
             >
-              <h3 className="text-lg font-bold">🔑 API Key 配置</h3>
+              <h3 className="text-lg font-bold">♝ API Key 配置</h3>
               <button 
                 onClick={() => setShowApiKeyModal(false)} 
                 style={{ color: 'var(--on-primary)', opacity: 0.8 }}
@@ -680,7 +741,7 @@ const App: React.FC = () => {
                 取消
               </button>
               <button 
-                onClick={() => { saveApiKey(apiKey); setShowApiKeyModal(false); alert('✅ API Key 已保存！'); }}
+                onClick={() => { saveApiKey(apiKey); setShowApiKeyModal(false); alert('API Key 已保存！'); }}
                 className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
                 style={{ 
                   backgroundColor: 'var(--primary)',

@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QuizMaster AI</title>
+    <!-- Theme Color for Safari/iOS -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+    <!-- PWA iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -88,15 +94,29 @@
         opacity: 1;
       }
 
-      /* Glassmorphism Header - Frosted Glass Effect */
-      .glass-header {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        /* Use pseudo-element for backdrop blur */
+      /* Glassmorphism Header - Frosted Glass Effect (iOS Safari Compatible) */
+      .glass-header,
+      .glass {
+        /* Ensure backdrop-filter works on iOS Safari */
+        -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+        backdrop-filter: blur(12px) saturate(150%) !important;
+        /* Must have semi-transparent background for backdrop-filter to work */
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        /* Avoid transform/filter conflicts that break backdrop-filter on iOS */
+        transform: none;
+        will-change: auto;
         isolation: isolate;
+        position: relative;
       }
       
+      .dark .glass-header,
+      .dark .glass {
+        background-color: rgba(20, 20, 20, 0.18) !important;
+        -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+        backdrop-filter: blur(14px) saturate(160%) !important;
+      }
+      
+      /* Legacy pseudo-element approach (fallback) */
       .glass-header::before {
         content: '';
         position: absolute;
@@ -104,25 +124,24 @@
         /* Light transparent background - more transparent */
         background: linear-gradient(
           to bottom,
-          rgba(255, 255, 255, 0.3) 0%,
-          rgba(255, 255, 255, 0.15) 100%
-        );
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(255, 255, 255, 0.04) 100%
+        ) !important;
         /* Lighter blur for more transparent effect */
-        backdrop-filter: blur(8px) saturate(150%);
-        -webkit-backdrop-filter: blur(8px) saturate(150%);
-        /* GPU acceleration */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        will-change: backdrop-filter;
+        backdrop-filter: blur(12px) saturate(150%) !important;
+        -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+        /* GPU acceleration - but avoid on iOS if it breaks backdrop-filter */
         z-index: -1;
+        pointer-events: none;
       }
       
       .dark .glass-header::before {
         background: linear-gradient(
           to bottom,
-          rgba(0, 0, 0, 0.4) 0%,
-          rgba(0, 0, 0, 0.2) 100%
-        );
+          rgba(255, 255, 255, 0.06) 0%,
+          rgba(255, 255, 255, 0.02) 55%,
+          rgba(0, 0, 0, 0.04) 100%
+        ) !important;
       }
       
       /* Scrollable content area */
