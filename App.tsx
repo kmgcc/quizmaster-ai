@@ -20,7 +20,7 @@ const App: React.FC = () => {
   const [quizBatchSize, setQuizBatchSize] = useState<number | undefined>(undefined);
   
   // Settings State
-  const [themePalette, setThemePalette] = useState<ThemePalette>('sunlit_yellow');
+  const [themePalette, setThemePalette] = useState<ThemePalette>('teal_elegant');
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const [showSettings, setShowSettings] = useState(false);
   const [showAiConfigModal, setShowAiConfigModal] = useState(false);
@@ -175,11 +175,11 @@ const App: React.FC = () => {
       
       // 提示用户备份包含敏感信息
       const hasApiKey = backup.data.ai?.apiKey ? '⚠️ 备份文件包含 API Key，请妥善保管！\n\n' : '';
-      alert(`${hasApiKey}✅ 数据导出成功！\n\n已导出：\n- ${backup.data.banks.length} 个题库\n- ${backup.data.sessions.length} 条答题记录\n- ${Object.keys(backup.data.progress).length} 个答题进度\n- ${Object.keys(backup.data.chats).reduce((sum, bankId) => sum + Object.keys(backup.data.chats[bankId]).length, 0)} 个题目的 AI 对话记录\n- AI 设置${backup.data.ai?.apiKey ? '（含 API Key）' : ''}\n\n备份文件已下载。`);
+      alert(`${hasApiKey}数据导出成功！\n\n已导出：\n- ${backup.data.banks.length} 个题库\n- ${backup.data.sessions.length} 条答题记录\n- ${Object.keys(backup.data.progress).length} 个答题进度\n- ${Object.keys(backup.data.chats).reduce((sum, bankId) => sum + Object.keys(backup.data.chats[bankId]).length, 0)} 个题目的 AI 对话记录\n- AI 设置${backup.data.ai?.apiKey ? '（含 API Key）' : ''}\n\n备份文件已下载。`);
       setShowSettings(false);
     } catch (err) {
       console.error('Export failed:', err);
-      alert('❌ 导出失败，请查看控制台了解详情。');
+      alert('导出失败，请查看控制台了解详情。');
     }
   };
 
@@ -414,7 +414,7 @@ const App: React.FC = () => {
                                 color: themeMode === 'light' ? 'var(--on-primary-container)' : 'var(--muted)',
                               }}
                             >
-                               ☀️ 浅色
+                               浅色
                             </button>
                             <button 
                               onClick={() => handleSetThemeMode('dark')} 
@@ -424,7 +424,7 @@ const App: React.FC = () => {
                                 color: themeMode === 'dark' ? 'var(--on-primary-container)' : 'var(--muted)',
                               }}
                             >
-                               ●深色
+                               深色
                             </button>
                             <button 
                               onClick={() => handleSetThemeMode('system')} 
@@ -488,7 +488,7 @@ const App: React.FC = () => {
                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
                          >
-                            <span className="text-lg">🔑</span> API Key 配置
+                            <span className="text-lg"></span> API Key 配置
                          </button>
                          <button 
                            onClick={() => { setShowAiConfigModal(true); setShowSettings(false); }} 
@@ -497,7 +497,7 @@ const App: React.FC = () => {
                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
                          >
-                            <span className="text-lg">✿</span> AI 助教设置
+                            <span className="text-lg"></span>AI 助教设置
                          </button>
                       </div>
 
@@ -510,7 +510,7 @@ const App: React.FC = () => {
                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
                          >
-                            <span className="text-lg">✞</span> 导出所有数据
+                            <span className="text-lg"></span>导出所有数据
                          </button>
                          <input 
                            type="file" 
@@ -526,7 +526,7 @@ const App: React.FC = () => {
                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
                          >
-                            <span className="text-lg">♂</span> 导入备份数据
+                            <span className="text-lg"></span>导入备份数据
                          </button>
                       </div>
 
@@ -538,7 +538,7 @@ const App: React.FC = () => {
                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
                          >
-                            <span className="text-lg">✎</span> 开发者测试
+                            <span className="text-lg"></span>开发者测试
                          </button>
                       </div>
                     </div>
@@ -654,7 +654,7 @@ const App: React.FC = () => {
                 borderColor: 'var(--outline)',
               }}
             >
-              <h3 className="text-lg font-bold">♝ API Key 配置</h3>
+              <h3 className="text-lg font-bold">API Key 配置</h3>
               <button 
                 onClick={() => setShowApiKeyModal(false)} 
                 style={{ color: 'var(--on-primary)', opacity: 0.8 }}

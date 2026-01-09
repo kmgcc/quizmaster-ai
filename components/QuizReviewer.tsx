@@ -531,7 +531,7 @@ export const QuizReviewer: React.FC<Props> = ({
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>📝 笔记汇总</h3>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>✎ 笔记汇总</h3>
                   <p className="text-xs" style={{ color: 'var(--muted)' }}>你在本次练习中记录了 {notesCount} 条笔记</p>
                 </div>
               </div>

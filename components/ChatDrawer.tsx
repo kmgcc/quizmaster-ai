@@ -692,7 +692,7 @@ export const ChatDrawer: React.FC<Props> = ({
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-container)'}
             >
-              ✨ 这题怎么做？
+              🐾 这题怎么做？
             </button>
             <button 
               onClick={() => sendMessage("请解释一下这个知识点")}
@@ -711,7 +711,7 @@ export const ChatDrawer: React.FC<Props> = ({
                 e.currentTarget.style.borderColor = 'var(--outline)';
               }}
             >
-              📖 解释知识点
+            解释知识点
             </button>
             <button 
               onClick={() => sendMessage("给一个相关的代码示例")}
@@ -730,7 +730,7 @@ export const ChatDrawer: React.FC<Props> = ({
                 e.currentTarget.style.borderColor = 'var(--outline)';
               }}
             >
-              💻 代码示例
+              代码示例
             </button>
           </div>
         )}
