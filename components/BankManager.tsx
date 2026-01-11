@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { QuestionBank, QuizSession } from '../types';
 import { validateQuestionBank } from '../services/validator';
 import { SAMPLE_BANK } from '../constants';
@@ -18,8 +19,13 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
   const [showPasteModal, setShowPasteModal] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
   const [historyModalBankId, setHistoryModalBankId] = useState<string | null>(null);
-  const [deleteConfirmBankId, setDeleteConfirmBankId] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title?: string } | null>(null);
   const [pasteContent, setPasteContent] = useState('');
+  
+  // Clear Incomplete Progress State
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+  const [targetBankId, setTargetBankId] = useState<string | null>(null);
   
   // Batch Mode State
   const [enableBatchMode, setEnableBatchMode] = useState(false);
@@ -65,6 +71,35 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
       console.error('Failed to save batch size preference', e);
     }
   };
+
+  // 清除未完成的答题记录
+  const handleClearIncompleteProgress = (bankId: string) => {
+    const savedProgressKey = `qb_progress_${bankId}`;
+    localStorage.removeItem(savedProgressKey);
+    setClearConfirmOpen(false);
+    setTargetBankId(null);
+    // 触发重新渲染（通过强制更新或页面刷新）
+    window.location.reload();
+  };
+
+  // ESC 键关闭确认弹窗
+  useEffect(() => {
+    if (!clearConfirmOpen && !deleteConfirmOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (clearConfirmOpen) {
+          setClearConfirmOpen(false);
+          setTargetBankId(null);
+        }
+        if (deleteConfirmOpen) {
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [clearConfirmOpen, deleteConfirmOpen]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -415,17 +450,13 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                         {bank.questions.length} 题
                       </span>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setDeleteConfirmBankId(bank.id); }}
-                        className="transition p-1 rounded"
-                        style={{ color: 'var(--muted)' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'var(--danger)';
-                          e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget({ id: bank.id, title: bank.title });
+                          setDeleteConfirmOpen(true);
                         }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--muted)';
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
+                        className="transition p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100 pointer-events-auto"
+                        style={{ color: 'var(--danger)', backgroundColor: 'var(--surface2)' }}
                         title="删除题库"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -481,7 +512,7 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                       
                       return hasProgress ? (
                         <div 
-                          className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border"
+                          className="group flex items-center gap-2 text-xs px-3 py-2 rounded-lg border"
                           style={{ 
                             color: 'var(--warning)',
                             backgroundColor: 'rgba(var(--warning-rgb, 251, 191, 36), 0.15)',
@@ -492,6 +523,19 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                           </svg>
                           <span className="font-medium">有未完成的答题记录</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTargetBankId(bank.id);
+                              setClearConfirmOpen(true);
+                            }}
+                            className="ml-auto opacity-0 group-hover:opacity-100 transition p-1.5 rounded hover:bg-black/5 dark:hover:bg-white/10"
+                            aria-label="清除未完成记录"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
                       ) : null;
                     })()}
@@ -534,26 +578,6 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
                         </svg>
                       </button>
                     )}
-                      <button 
-                        onClick={() => setDeleteConfirmBankId(bank.id)}
-                        className="p-2 rounded-lg border border-transparent transition"
-                        style={{ color: 'var(--muted)' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'var(--danger)';
-                          e.currentTarget.style.backgroundColor = 'var(--surface)';
-                          e.currentTarget.style.borderColor = 'var(--danger)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--muted)';
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.borderColor = 'transparent';
-                        }}
-                        title="删除题库"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -828,60 +852,139 @@ export const BankManager: React.FC<Props> = ({ banks, sessions, onImport, onDele
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmBankId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
-            <div 
-              className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-sm flex flex-col transition-colors border p-6 text-center"
-              style={{ 
-                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
-                borderColor: 'var(--outline)',
-              }}
-            >
-              <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ 
-                  backgroundColor: 'var(--danger)',
-                  color: 'var(--on-primary)',
-                  opacity: 0.2,
+      {deleteConfirmOpen && deleteTarget && createPortal(
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-[9999] animate-fade-in"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
+            onClick={() => {
+              setDeleteConfirmOpen(false);
+              setDeleteTarget(null);
+            }}
+          />
+          
+          {/* Dialog */}
+          <div 
+            className="fixed left-1/2 top-1/2 z-[10000] -translate-x-1/2 -translate-y-1/2 w-[min(92vw,420px)] rounded-2xl border shadow-2xl ring-1 ring-white/10 p-5 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/40 dark:bg-zinc-900/40"
+            style={{
+              WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+              backdropFilter: 'blur(18px) saturate(160%)',
+              borderColor: 'rgba(255,255,255,0.18)',
+            } as React.CSSProperties}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--text)' }}>
+              确认删除题库？
+            </h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
+              此操作会删除题库及其所有相关的练习记录，不可撤销。
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setDeleteTarget(null);
+                }}
+                className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
-                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                 </svg>
-              </div>
-              <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>确认删除?</h3>
-              <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>此操作无法撤销。该题库及所有相关的练习记录将被永久删除。</p>
-              <div className="flex gap-3 justify-center">
-                  <button 
-                    onClick={() => setDeleteConfirmBankId(null)}
-                    className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
-                    style={{ color: 'var(--muted)' }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'var(--text)';
-                      e.currentTarget.style.backgroundColor = 'var(--surface2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'var(--muted)';
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    取消
-                  </button>
-                  <button 
-                    onClick={() => { onDelete(deleteConfirmBankId); setDeleteConfirmBankId(null); }}
-                    className="px-5 py-2.5 text-sm font-bold rounded-xl transition"
-                    style={{ 
-                      backgroundColor: 'var(--danger)',
-                      color: 'var(--on-primary)',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                  >
-                    确认删除
-                  </button>
-              </div>
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(deleteTarget.id);
+                  setDeleteConfirmOpen(false);
+                  setDeleteTarget(null);
+                }}
+                className="px-5 py-2.5 text-sm font-bold rounded-xl transition"
+                style={{
+                  backgroundColor: 'var(--danger)',
+                  color: 'var(--on-primary)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                删除
+              </button>
             </div>
           </div>
+        </>,
+        document.body
+      )}
+
+      {/* Clear Incomplete Progress Confirmation Modal */}
+      {clearConfirmOpen && targetBankId && createPortal(
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-[9998] animate-fade-in"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+            onClick={() => {
+              setClearConfirmOpen(false);
+              setTargetBankId(null);
+            }}
+          />
+          
+          {/* Dialog */}
+          <div 
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,420px)] z-[9999] rounded-2xl border shadow-2xl p-5 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/40 dark:bg-zinc-900/40"
+            style={{
+              WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+              backdropFilter: 'blur(18px) saturate(160%)',
+              borderColor: 'var(--outline)',
+            } as React.CSSProperties}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--text)' }}>
+              清除未完成记录
+            </h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
+              确定要清除该题库的未完成答题记录吗？此操作只会清除未完成的进度，已完成的答题记录不会受到影响。
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setClearConfirmOpen(false);
+                  setTargetBankId(null);
+                }}
+                className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                style={{ color: 'var(--muted)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={() => handleClearIncompleteProgress(targetBankId)}
+                className="px-5 py-2.5 text-sm font-bold rounded-xl transition"
+                style={{
+                  backgroundColor: 'var(--warning)',
+                  color: 'var(--on-primary)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                清除
+              </button>
+            </div>
+          </div>
+        </>,
+        document.body
       )}
     </div>
   );
