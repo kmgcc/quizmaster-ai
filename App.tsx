@@ -4,7 +4,7 @@ import { BankManager } from './components/BankManager';
 import { QuizRunner } from './components/QuizRunner';
 import { QuizReviewer } from './components/QuizReviewer';
 import { TestRunner } from './components/TestRunner';
-import { QuestionBank, QuizSession, AISettings } from './types';
+import { QuestionBank, QuizSession, AISettings, Folder, BankFolderMap } from './types';
 import { exportBackup, downloadBackupJson, importBackup, BackupV1 } from './utils/backup';
 import { ThemePalette, applyTheme, getThemeDisplayName, getThemePreviewColors, themes } from './utils/theme';
 
@@ -14,6 +14,8 @@ const App: React.FC = () => {
   const [view, setView] = useState<'home' | 'quiz' | 'review' | 'tests'>('home');
   const [banks, setBanks] = useState<QuestionBank[]>([]);
   const [sessions, setSessions] = useState<QuizSession[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [bankFolderMap, setBankFolderMap] = useState<BankFolderMap>({});
   
   const [activeBank, setActiveBank] = useState<QuestionBank | null>(null);
   const [activeSession, setActiveSession] = useState<QuizSession | null>(null);
@@ -72,6 +74,10 @@ const App: React.FC = () => {
     if (savedBanks) { try { setBanks(JSON.parse(savedBanks)); } catch (e) { console.error("Failed to load banks"); } }
     const savedSessions = localStorage.getItem('qb_sessions');
     if (savedSessions) { try { setSessions(JSON.parse(savedSessions)); } catch (e) { console.error("Failed to load sessions"); } }
+    const savedFolders = localStorage.getItem('qb_folders');
+    if (savedFolders) { try { setFolders(JSON.parse(savedFolders)); } catch (e) { console.error("Failed to load folders"); } }
+    const savedBankFolderMap = localStorage.getItem('qb_bank_folder_map');
+    if (savedBankFolderMap) { try { setBankFolderMap(JSON.parse(savedBankFolderMap)); } catch (e) { console.error("Failed to load bank folder map"); } }
     const savedAiSettings = localStorage.getItem('qb_ai_settings');
     if (savedAiSettings) { try { setAiSettings(JSON.parse(savedAiSettings)); } catch (e) { console.error("Failed to load AI settings"); } }
     const savedThemeMode = localStorage.getItem('qb_theme_mode');
@@ -145,6 +151,16 @@ const App: React.FC = () => {
   const saveSessions = (newSessions: QuizSession[]) => {
     setSessions(newSessions);
     localStorage.setItem('qb_sessions', JSON.stringify(newSessions));
+  };
+
+  const saveFolders = (newFolders: Folder[]) => {
+    setFolders(newFolders);
+    localStorage.setItem('qb_folders', JSON.stringify(newFolders));
+  };
+
+  const saveBankFolderMap = (newMap: BankFolderMap) => {
+    setBankFolderMap(newMap);
+    localStorage.setItem('qb_bank_folder_map', JSON.stringify(newMap));
   };
 
   const saveAiSettings = (newSettings: AISettings) => {
@@ -270,12 +286,15 @@ const App: React.FC = () => {
     if (e.target) e.target.value = '';
   };
 
-  const handleImport = (bank: QuestionBank) => {
+  const handleImport = (bank: QuestionBank, targetFolderId?: string) => {
     if (banks.find(b => b.id === bank.id)) {
       alert("已存在相同 ID 的题库。请先删除旧题库。");
       return;
     }
     saveBanks([...banks, bank]);
+    if (targetFolderId) {
+      saveBankFolderMap({ ...bankFolderMap, [bank.id]: targetFolderId });
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -610,13 +629,17 @@ const App: React.FC = () => {
         return (
           <main className={`max-w-7xl mx-auto px-4 relative z-10 py-8 pt-[calc(var(--topbar-h,64px)+16px)]`}>
               {view === 'home' && (
-                <BankManager 
-                  banks={banks} 
+                <BankManager
+                  banks={banks}
                   sessions={sessions}
-                  onImport={handleImport} 
-                  onDelete={handleDelete} 
+                  folders={folders}
+                  bankFolderMap={bankFolderMap}
+                  onImport={handleImport}
+                  onDelete={handleDelete}
                   onSelect={startQuiz}
                   onViewHistory={handleViewHistory}
+                  onFoldersChange={saveFolders}
+                  onBankFolderMapChange={saveBankFolderMap}
                 />
               )}
 

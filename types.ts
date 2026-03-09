@@ -94,3 +94,15 @@ export interface ChatMessage {
   text: string;
   timestamp: number;
 }
+
+// --- Folder Types ---
+
+export interface Folder {
+  id: string;
+  name: string;
+  color: string;
+  note?: string;
+  created_at: number;
+}
+
+export type BankFolderMap = Record<string, string>;
