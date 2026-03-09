@@ -391,7 +391,7 @@ const App: React.FC = () => {
              <div className="relative" ref={settingsRef}>
                 <button 
                   onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 rounded-lg transition"
+                  className="p-2 rounded-full transition"
                   style={{ 
                     color: 'var(--muted)',
                     backgroundColor: showSettings ? 'var(--surface2)' : 'transparent',
@@ -409,7 +409,7 @@ const App: React.FC = () => {
                 {showSettings && settingsPosition && createPortal(
                   <div
                     ref={settingsDropdownRef}
-                    className="fixed w-80 z-[9999] rounded-xl shadow-2xl border border-white/20 dark:border-white/10 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35 pointer-events-auto overflow-hidden flex flex-col"
+                    className="fixed w-80 z-[9999] rounded-3xl shadow-2xl border border-white/20 dark:border-white/10 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35 pointer-events-auto overflow-hidden flex flex-col"
                     style={{
                       top: `${settingsPosition.top}px`,
                       right: `${settingsPosition.right}px`,
@@ -424,10 +424,10 @@ const App: React.FC = () => {
                       {/* Theme Mode Toggle */}
                       <div>
                          <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>显示模式</p>
-                         <div className="flex rounded-lg p-1" style={{ backgroundColor: 'var(--surface2)' }}>
-                            <button 
-                              onClick={() => handleSetThemeMode('light')} 
-                              className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+                         <div className="flex rounded-full p-1" style={{ backgroundColor: 'var(--surface2)' }}>
+<button 
+                            onClick={() => handleSetThemeMode('light')} 
+                            className="flex-1 py-1.5 rounded-full text-xs font-medium transition"
                               style={{
                                 backgroundColor: themeMode === 'light' ? 'var(--primary-container)' : 'transparent',
                                 color: themeMode === 'light' ? 'var(--on-primary-container)' : 'var(--muted)',
@@ -435,9 +435,9 @@ const App: React.FC = () => {
                             >
                                浅色
                             </button>
-                            <button 
-                              onClick={() => handleSetThemeMode('dark')} 
-                              className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+<button 
+                            onClick={() => handleSetThemeMode('dark')} 
+                            className="flex-1 py-1.5 rounded-full text-xs font-medium transition"
                               style={{
                                 backgroundColor: themeMode === 'dark' ? 'var(--primary-container)' : 'transparent',
                                 color: themeMode === 'dark' ? 'var(--on-primary-container)' : 'var(--muted)',
@@ -445,9 +445,9 @@ const App: React.FC = () => {
                             >
                                深色
                             </button>
-                            <button 
-                              onClick={() => handleSetThemeMode('system')} 
-                              className="flex-1 py-1.5 rounded-md text-xs font-medium transition"
+<button 
+                            onClick={() => handleSetThemeMode('system')} 
+                            className="flex-1 py-1.5 rounded-full text-xs font-medium transition"
                               style={{
                                 backgroundColor: themeMode === 'system' ? 'var(--primary-container)' : 'transparent',
                                 color: themeMode === 'system' ? 'var(--on-primary-container)' : 'var(--muted)',
@@ -472,7 +472,7 @@ const App: React.FC = () => {
                               <button
                                 key={palette}
                                 onClick={() => handleSetThemePalette(palette)}
-                                className="relative rounded-lg p-2 transition-all border-2 overflow-hidden"
+                                className="relative rounded-2xl p-2 transition-all border-2 overflow-hidden"
                                 style={{
                                   borderColor: isSelected ? 'var(--primary)' : 'var(--outline)',
                                   backgroundColor: isSelected ? 'var(--primary-container)' : 'var(--surface2)',
@@ -663,7 +663,7 @@ const App: React.FC = () => {
       {showApiKeyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div 
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border"
             style={{ 
               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
               borderColor: 'var(--outline)',
@@ -672,7 +672,7 @@ const App: React.FC = () => {
             <div 
               className="p-5 border-b flex justify-between items-center rounded-t-2xl"
               style={{ 
-                backgroundColor: 'var(--primary)',
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.2)',
                 color: 'var(--on-primary)',
                 borderColor: 'var(--outline)',
               }}
@@ -711,12 +711,12 @@ const App: React.FC = () => {
                   />
                </div>
                {apiKey && (
-                 <div 
-                   className="border rounded-lg p-3 text-xs"
-                   style={{ 
-                     backgroundColor: 'var(--success)',
-                     borderColor: 'var(--success)',
-                     color: 'var(--on-primary)',
+<div 
+                    className="border rounded-xl p-3 text-xs"
+                    style={{ 
+                      backgroundColor: 'var(--success)',
+                      borderColor: 'var(--success)',
+                      color: 'var(--on-primary)',
                      opacity: 0.2,
                    }}
                  >
@@ -729,12 +729,12 @@ const App: React.FC = () => {
                  </div>
                )}
                {!apiKey && (
-                 <div 
-                   className="border rounded-lg p-3 text-xs"
-                   style={{ 
-                     backgroundColor: 'var(--warning)',
-                     borderColor: 'var(--warning)',
-                     color: 'var(--on-primary)',
+<div 
+                    className="border rounded-xl p-3 text-xs"
+                    style={{ 
+                      backgroundColor: 'var(--warning)',
+                      borderColor: 'var(--warning)',
+                      color: 'var(--on-primary)',
                      opacity: 0.2,
                    }}
                  >
@@ -751,21 +751,21 @@ const App: React.FC = () => {
               className="p-5 border-t flex justify-end gap-3 rounded-b-2xl"
               style={{ 
                 borderColor: 'var(--outline)',
-                backgroundColor: 'var(--surface2)',
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.2)',
               }}
             >
-              <button 
+<button
                 onClick={() => setShowApiKeyModal(false)}
-                className="px-4 py-2 text-sm font-medium transition rounded-xl"
+                className="px-4 py-2 text-sm font-medium transition rounded-full"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
               >
                 取消
               </button>
-              <button 
+<button
                 onClick={() => { saveApiKey(apiKey); setShowApiKeyModal(false); alert('API Key 已保存！'); }}
-                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+                className="px-6 py-2.5 text-sm font-bold rounded-full transition"
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',
@@ -784,7 +784,7 @@ const App: React.FC = () => {
       {showAiConfigModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div 
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-lg flex flex-col transition-colors border"
             style={{ 
               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
               borderColor: 'var(--outline)',
@@ -793,7 +793,7 @@ const App: React.FC = () => {
             <div 
               className="p-5 border-b flex justify-between items-center rounded-t-2xl"
               style={{ 
-                backgroundColor: 'var(--primary)',
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.2)',
                 color: 'var(--on-primary)',
                 borderColor: 'var(--outline)',
               }}
@@ -850,21 +850,21 @@ const App: React.FC = () => {
               className="p-5 border-t flex justify-end gap-3 rounded-b-2xl"
               style={{ 
                 borderColor: 'var(--outline)',
-                backgroundColor: 'var(--surface2)',
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.2)',
               }}
             >
-              <button 
+<button
                 onClick={() => setAiSettings({roleName: 'AI 助教', customPrompt: ''})}
-                className="px-4 py-2 text-sm font-medium transition rounded-xl"
+                className="px-4 py-2 text-sm font-medium transition rounded-full"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
               >
                 恢复默认
               </button>
-              <button 
+<button
                 onClick={() => { saveAiSettings(aiSettings); setShowAiConfigModal(false); }}
-                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+                className="px-6 py-2.5 text-sm font-bold rounded-full transition"
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',

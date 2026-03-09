@@ -337,7 +337,7 @@ export const QuizReviewer: React.FC<Props> = ({
             <div className="space-y-3">
                 <button 
                   onClick={onRetake} 
-                  className="w-full px-6 py-3 font-bold rounded-2xl transition"
+                  className="w-full px-6 py-3 font-bold rounded-full transition"
                   style={{ 
                     backgroundColor: 'var(--primary)',
                     color: 'var(--on-primary)',
@@ -349,7 +349,7 @@ export const QuizReviewer: React.FC<Props> = ({
                 </button>
                 <button 
                   onClick={onExit} 
-                  className="w-full px-6 py-3 font-bold rounded-2xl border transition"
+                  className="w-full px-6 py-3 font-bold rounded-full border transition"
                   style={{
                     backgroundColor: 'var(--surface)',
                     color: 'var(--text)',
@@ -375,7 +375,7 @@ export const QuizReviewer: React.FC<Props> = ({
         {!isChatOpen && !isInterim && (
           <details className="md:hidden fixed top-[calc(var(--topbar-h,64px)+8px)] left-0 right-0 z-40 mx-4">
             <summary 
-              className="flex items-center justify-between px-4 py-3 rounded-xl border cursor-pointer transition-colors list-none backdrop-blur-md shadow-lg"
+              className="flex items-center justify-between px-4 py-3 rounded-2xl border cursor-pointer transition-colors list-none backdrop-blur-md shadow-lg"
               style={{
                 backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.35)',
                 borderColor: 'var(--outline)',
@@ -468,7 +468,7 @@ export const QuizReviewer: React.FC<Props> = ({
               <div className="space-y-2">
                 <button 
                   onClick={onRetake} 
-                  className="w-full px-5 py-2.5 font-bold rounded-xl transition text-sm"
+                  className="w-full px-5 py-2.5 font-bold rounded-full transition text-sm"
                   style={{ 
                     backgroundColor: 'var(--primary)',
                     color: 'var(--on-primary)',
@@ -480,7 +480,7 @@ export const QuizReviewer: React.FC<Props> = ({
                 </button>
                 <button 
                   onClick={onExit} 
-                  className="w-full px-5 py-2.5 font-bold rounded-xl border transition text-sm"
+                  className="w-full px-5 py-2.5 font-bold rounded-full border transition text-sm"
                   style={{
                     backgroundColor: 'var(--surface)',
                     color: 'var(--text)',
@@ -541,7 +541,7 @@ export const QuizReviewer: React.FC<Props> = ({
                   if (!resp?.annotation) return null;
                   
                   return (
-                    <div key={q.id} className="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-yellow-200 dark:border-yellow-800/30">
+                    <div key={q.id} className="bg-white dark:bg-slate-800/50 p-4 rounded-2xl border border-yellow-200 dark:border-yellow-800/30">
                       <div className="flex items-start gap-3">
                         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 mt-0.5" style={{ backgroundColor: 'var(--warning)', color: 'var(--on-primary)', opacity: 0.2 }}>
                           {(() => {
@@ -626,7 +626,7 @@ export const QuizReviewer: React.FC<Props> = ({
                   <div className="flex gap-2">
                     <button 
                       onClick={() => setChatQuestion({ q, r: resp })}
-                      className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition"
+                      className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition"
                       style={{
                         backgroundColor: isActive ? 'var(--primary)' : 'transparent',
                         color: isActive ? 'var(--on-primary)' : 'var(--primary)',
@@ -645,8 +645,8 @@ export const QuizReviewer: React.FC<Props> = ({
                     >
                       <span>{isActive ? '正在讨论...' : '✨ 问 AI'}</span>
                     </button>
-                    <span 
-                      className="px-3 py-1 rounded-lg text-xs font-bold"
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-bold"
                       style={{
                         backgroundColor: isCorrect 
                           ? 'rgba(var(--success-rgb, 34, 197, 94), 0.2)'
@@ -674,9 +674,9 @@ export const QuizReviewer: React.FC<Props> = ({
                         : q.answer.correct_option_keys?.includes(opt.key);
                       
                       return (
-                        <div 
+                        <div
                           key={opt.key}
-                          className="px-3 py-2 rounded-lg text-sm border"
+                          className="px-3 py-2 rounded-full text-sm border"
                           style={
                             isCorrectOption 
                               ? {
@@ -708,7 +708,7 @@ export const QuizReviewer: React.FC<Props> = ({
                 )}
                 
                 <div 
-                  className="p-4 rounded-xl text-sm space-y-2 break-words overflow-x-hidden"
+                  className="p-4 rounded-2xl text-sm space-y-2 break-words overflow-x-hidden"
                   style={{
                     backgroundColor: 'var(--surface2)',
                     color: 'var(--text)',
@@ -783,7 +783,7 @@ export const QuizReviewer: React.FC<Props> = ({
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/45 dark:bg-zinc-900/35 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up">
               <button 
                 onClick={onContinue}
-                className="px-12 py-3 text-white text-lg font-bold rounded-xl transition transform active:scale-95 flex items-center gap-2"
+                className="px-12 py-3 text-white text-lg font-bold rounded-full transition transform active:scale-95 flex items-center gap-2"
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',

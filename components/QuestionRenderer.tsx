@@ -88,7 +88,7 @@ const renderMarkdownText = (text: string): React.ReactNode => {
 export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onChange, disabled, showFeedback, isCorrect, themeColor }) => {
   
   const getOptionClass = (isSelected: boolean, isCorrectKey: boolean) => {
-    return "relative group w-full text-left p-4 rounded-lg border-2 transition-all flex items-center justify-between overflow-hidden ";
+    return "relative group w-full text-left p-4 rounded-full border-2 transition-all flex items-center justify-between overflow-hidden ";
   };
 
   const getOptionStyle = (isSelected: boolean, isCorrectKey: boolean) => {
@@ -260,7 +260,7 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
               const isCorrectKey = question.answer.correct_boolean === val;
               
               // Custom colors for True/False
-              let className = "group relative w-full p-6 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 font-bold text-lg overflow-hidden ";
+              let className = "group relative w-full p-6 rounded-full border-2 transition-all flex flex-col items-center justify-center gap-2 font-bold text-lg overflow-hidden ";
               if (showFeedback) {
                   if (isCorrectKey) className += "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-800 dark:text-green-400";
                   else if (isSelected) className += "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-800 dark:text-red-400";
@@ -301,7 +301,7 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
               onChange={(e) => onChange && onChange(e.target.value)}
               disabled={disabled}
               placeholder="请输入你的答案..."
-              className="w-full p-4 border-2 rounded-lg text-lg outline-none transition-colors"
+              className="w-full p-4 border-2 rounded-full text-lg outline-none transition-colors"
               style={{
                 borderColor: showFeedback 
                   ? (isCorrect ? 'var(--success)' : 'var(--danger)')

@@ -350,10 +350,24 @@ export const BankManager: React.FC<Props> = ({
             </p>
 
             <div className="space-y-3">
+              <button
+                onClick={loadSample}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-full transition border"
+                style={{
+                  color: 'var(--on-primary-container)',
+                  backgroundColor: 'var(--primary-container)',
+                  borderColor: 'transparent',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--primary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--primary-container)')}
+              >
+                <span className="text-lg">⚡</span> 加载示例
+              </button>
+
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setShowPasteModal(true)}
-                  className="row-span-2 flex flex-col items-center justify-center gap-2 px-4 py-8 text-sm font-medium border rounded-3xl transition shadow-sm"
+                  className="row-span-2 flex flex-col items-center justify-center gap-2 px-4 py-8 text-sm font-medium border rounded-2xl transition shadow-sm"
                   style={{
                     color: 'var(--text)',
                     backgroundColor: 'var(--surface)',
@@ -368,44 +382,24 @@ export const BankManager: React.FC<Props> = ({
                     e.currentTarget.style.backgroundColor = 'var(--surface)';
                   }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+                  <span className="text-2xl">📋</span>
                   粘贴 JSON
                 </button>
 
-                <div className="flex flex-col gap-3">
-                  <button
-                    onClick={loadSample}
-                    className="flex items-center justify-center px-4 py-2 text-sm font-bold rounded-full transition border"
-                    style={{
-                      color: 'var(--on-primary-container)',
-                      backgroundColor: 'var(--primary-container)',
-                      borderColor: 'transparent',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--primary)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--primary-container)')}
-                  >
-                    加载示例
-                  </button>
-
-                  <input type="file" accept=".json" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 flex flex-col items-center justify-center gap-1 px-4 text-sm font-medium rounded-full transition min-h-[80px]"
-                    style={{
-                      color: 'var(--on-primary)',
-                      backgroundColor: 'var(--primary)',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    导入文件
-                  </button>
-                </div>
+                <input type="file" accept=".json" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium rounded-full transition"
+                  style={{
+                    color: 'var(--on-primary)',
+                    backgroundColor: 'var(--primary)',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                >
+                  <span className="text-xl">📁</span>
+                  导入文件
+                </button>
               </div>
 
               {!currentFolder && (
@@ -1096,7 +1090,7 @@ export const BankManager: React.FC<Props> = ({
               </div>
               <button
                 onClick={() => setShowPasteModal(false)}
-                className="p-2 rounded-full transition"
+                className="p-1 rounded transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1201,7 +1195,7 @@ export const BankManager: React.FC<Props> = ({
               </div>
               <button
                 onClick={() => setShowFormatModal(false)}
-                className="p-2 rounded-full transition"
+                className="p-1 rounded transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1219,7 +1213,7 @@ export const BankManager: React.FC<Props> = ({
             </div>
             <div
               className="flex-1 overflow-y-auto p-6"
-              style={{ backgroundColor: 'transparent' }}
+              style={{ backgroundColor: 'var(--surface2)' }}
             >
               <pre
                 className="text-xs font-mono p-4 rounded-xl overflow-x-auto shadow-inner border"
@@ -1288,7 +1282,7 @@ export const BankManager: React.FC<Props> = ({
             </div>
             <div
               className="flex-1 overflow-y-auto p-2 space-y-2"
-              style={{ backgroundColor: 'transparent' }}
+              style={{ backgroundColor: 'var(--surface2)' }}
             >
               {getBankSessions(historyModalBankId).length === 0 ? (
                 <div className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>
@@ -1366,7 +1360,7 @@ export const BankManager: React.FC<Props> = ({
               </h3>
               <button
                 onClick={() => setShowFolderModal(false)}
-                className="p-2 rounded-full transition"
+                className="p-1 rounded transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1506,7 +1500,7 @@ export const BankManager: React.FC<Props> = ({
               </h3>
               <button
                 onClick={() => setShowMoveToFolderModal(false)}
-                className="p-2 rounded-full transition"
+                className="p-1 rounded transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1522,7 +1516,7 @@ export const BankManager: React.FC<Props> = ({
                 </svg>
               </button>
             </div>
-            <div className="p-2 space-y-1 max-h-80 overflow-y-auto" style={{ backgroundColor: 'transparent' }}>
+            <div className="p-2 space-y-1 max-h-80 overflow-y-auto" style={{ backgroundColor: 'var(--surface)' }}>
               {folders.length === 0 ? (
                 <div className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>
                   暂无文件夹，请先创建

@@ -747,7 +747,7 @@ export const ChatDrawer: React.FC<Props> = ({
             placeholder="输入消息... (点击按钮发送，Shift+Enter 换行)"
             disabled={loading}
             rows={1}
-            className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px]"
+            className="flex-1 border rounded-2xl px-4 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px]"
             style={{
               borderColor: 'var(--outline)',
               backgroundColor: 'var(--surface)',
@@ -764,7 +764,7 @@ export const ChatDrawer: React.FC<Props> = ({
               }
             }}
             disabled={loading || !input.trim()}
-            className="p-2 rounded-lg transition shrink-0"
+            className="p-2 rounded-full transition shrink-0"
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--on-primary)',
@@ -795,7 +795,7 @@ export const ChatDrawer: React.FC<Props> = ({
   if (isOpen && isWide && !inline) {
     const dockPanel = (
       <div 
-        className="relative w-[480px] flex flex-col overflow-hidden rounded-2xl shadow-2xl border transition-colors"
+        className="relative w-[480px] flex flex-col overflow-hidden rounded-3xl shadow-2xl border transition-colors"
         style={{
           position: 'fixed',
           right: '16px',
@@ -824,7 +824,7 @@ export const ChatDrawer: React.FC<Props> = ({
       />
       {/* Panel - Bottom centered, width and height limited */}
       <div 
-        className="relative flex flex-col overflow-hidden rounded-2xl shadow-2xl border transition-colors mb-3"
+        className="relative flex flex-col overflow-hidden rounded-3xl shadow-2xl border transition-colors mb-3"
         style={{
           width: `min(${DOCK_W}px, calc(100vw - 24px))`,
           maxHeight: `min(70vh, calc(100vh - var(--topbar-h, 64px) - 24px))`,

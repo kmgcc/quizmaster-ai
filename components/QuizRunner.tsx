@@ -392,7 +392,7 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
                         <button
                             key={q.id}
                             onClick={() => goToQuestion(idx)}
-                            className="aspect-square rounded-xl flex items-center justify-center text-sm font-bold transition-all relative"
+                            className="aspect-square rounded-full flex items-center justify-center text-sm font-bold transition-all relative"
                             style={{
                               backgroundColor: isCurrent 
                                 ? 'var(--primary)' 
@@ -468,7 +468,7 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
                        </button>
                        <div>
                           <span 
-                            className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-1"
+                            className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider mb-1"
                             style={{ 
                               backgroundColor: 'var(--surface2)',
                               color: 'var(--muted)',
@@ -482,9 +482,9 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
                        </div>
                     </div>
                     <div className="flex items-center gap-2 relative z-10">
-                       <button 
-                         onClick={onExit} 
-                         className="hidden md:flex items-center gap-1 text-sm font-medium transition px-3 py-1.5 rounded-lg"
+<button
+                          onClick={onExit} 
+                          className="hidden md:flex items-center gap-1 text-sm font-medium transition px-3 py-1.5 rounded-full"
                          style={{ color: 'var(--muted)' }}
                          onMouseEnter={(e) => {
                            e.currentTarget.style.color = 'var(--text)';
@@ -547,10 +547,10 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
                backgroundColor: 'var(--surface2)',
              }}
            >
-              <button 
-                onClick={handlePrev} 
-                disabled={currentIndex === 0 || isGradingAI}
-                className="px-6 py-3 rounded-xl font-bold transition-all"
+<button 
+                 onClick={handlePrev} 
+                 disabled={currentIndex === 0 || isGradingAI}
+                 className="px-6 py-3 rounded-full font-bold transition-all"
                 style={{ 
                   color: 'var(--text)',
                   opacity: (currentIndex === 0 || isGradingAI) ? 0.3 : 1,
@@ -569,10 +569,10 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
 
               <div className="flex items-center gap-4">
                   {/* Flag as Confusing Button */}
-                  <button 
-                    onClick={() => setIsCurrentFlagged(!isCurrentFlagged)}
-                    title="标记存疑"
-                    className="p-3 rounded-xl transition-all"
+<button 
+                     onClick={() => setIsCurrentFlagged(!isCurrentFlagged)}
+                     title="标记存疑"
+                     className="p-3 rounded-full transition-all"
                     style={{
                       backgroundColor: isCurrentFlagged 
                         ? 'rgba(var(--warning-rgb, 251, 191, 36), 0.2)' 
@@ -605,10 +605,10 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
                   </button>
 
                   {currentIndex === questions.length - 1 ? (
-                    <button 
-                      onClick={finishQuiz}
-                      disabled={isGradingAI || !hasAnswered()}
-                      className="px-8 py-3 rounded-xl font-bold transition transform active:scale-95"
+<button 
+                       onClick={finishQuiz}
+                       disabled={isGradingAI || !hasAnswered()}
+                       className="px-8 py-3 rounded-full font-bold transition transform active:scale-95"
                       style={{ 
                         backgroundColor: 'var(--success)',
                         color: 'var(--on-primary)',
@@ -628,10 +628,10 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
                       交卷
                     </button>
                   ) : (
-                    <button 
-                      onClick={handleNext}
-                      disabled={!hasAnswered()}
-                      className="px-8 py-3 rounded-xl font-bold transition transform active:scale-95"
+<button 
+                       onClick={handleNext}
+                       disabled={!hasAnswered()}
+                       className="px-8 py-3 rounded-full font-bold transition transform active:scale-95"
                       style={{ 
                         backgroundColor: 'var(--primary)',
                         color: 'var(--on-primary)',
