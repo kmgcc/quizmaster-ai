@@ -334,13 +334,12 @@ export const BankManager: React.FC<Props> = ({
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
       <div className="w-full lg:w-80 shrink-0 space-y-6 lg:sticky lg:top-24">
-        <div
-          className="rounded-2xl shadow-sm border overflow-hidden relative transition-colors backdrop-blur-md"
-          style={{
-            backgroundColor: 'var(--surface)',
-            borderColor: 'var(--outline)',
-          }}
-        >
+<div
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden border border-white/20 dark:border-white/10 ring-1 ring-white/10 supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35"
+            style={{
+              backdropFilter: 'blur(24px)',
+            }}
+          >
           <div className="absolute top-0 left-0 w-full h-1 z-10" style={{ backgroundColor: 'var(--primary)' }}></div>
           <div className="p-6">
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text)' }}>
@@ -353,7 +352,7 @@ export const BankManager: React.FC<Props> = ({
             <div className="space-y-3">
               <button
                 onClick={loadSample}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-xl transition border"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-full transition border"
                 style={{
                   color: 'var(--on-primary-container)',
                   backgroundColor: 'var(--primary-container)',
@@ -362,13 +361,13 @@ export const BankManager: React.FC<Props> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--primary)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--primary-container)')}
               >
-                <span className="text-lg">⚡</span> 加载示例题库
+                <span className="text-lg">⚡</span> 加载示例
               </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setShowPasteModal(true)}
-                  className="flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium border rounded-xl transition shadow-sm"
+                  className="row-span-2 flex flex-col items-center justify-center gap-2 px-4 py-8 text-sm font-medium border rounded-2xl transition shadow-sm"
                   style={{
                     color: 'var(--text)',
                     backgroundColor: 'var(--surface)',
@@ -383,36 +382,30 @@ export const BankManager: React.FC<Props> = ({
                     e.currentTarget.style.backgroundColor = 'var(--surface)';
                   }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--muted)' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <span className="text-2xl">📋</span>
                   粘贴 JSON
                 </button>
 
-                <div className="relative h-full">
-                  <input type="file" accept=".json" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-full flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium rounded-xl transition"
-                    style={{
-                      color: 'var(--on-primary)',
-                      backgroundColor: 'var(--primary)',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--on-primary)', opacity: 0.8 }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    导入文件
-                  </button>
-                </div>
+                <input type="file" accept=".json" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-2 px-4 py-4 text-sm font-medium rounded-full transition"
+                  style={{
+                    color: 'var(--on-primary)',
+                    backgroundColor: 'var(--primary)',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                >
+                  <span className="text-xl">📁</span>
+                  导入文件
+                </button>
               </div>
 
               {!currentFolder && (
                 <button
                   onClick={handleCreateFolder}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-xl transition border"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-full transition border"
                   style={{
                     color: 'var(--text)',
                     backgroundColor: 'var(--surface2)',
@@ -452,7 +445,7 @@ export const BankManager: React.FC<Props> = ({
 
         {error && (
           <div
-            className="border p-4 rounded-xl flex justify-between items-start gap-2 shadow-sm animate-pulse"
+            className="border p-4 rounded-2xl flex justify-between items-start gap-2 shadow-sm animate-pulse"
             style={{
               backgroundColor: 'rgba(var(--danger-rgb, 239, 68, 68), 0.15)',
               borderColor: 'var(--danger)',
@@ -488,7 +481,7 @@ export const BankManager: React.FC<Props> = ({
           >
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: currentFolder.color }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -506,7 +499,7 @@ export const BankManager: React.FC<Props> = ({
             </div>
             <button
               onClick={handleExitFolder}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-full transition"
               style={{
                 backgroundColor: 'var(--surface2)',
                 color: 'var(--text)',
@@ -646,7 +639,7 @@ export const BankManager: React.FC<Props> = ({
                       <div
                         key={folder.id}
                         onClick={() => handleEnterFolder(folder.id)}
-                        className="group relative rounded-xl shadow-sm border transition-all duration-300 flex items-center gap-4 p-4 cursor-pointer overflow-hidden backdrop-blur-md hover:shadow-md"
+                        className="group relative rounded-2xl shadow-sm border transition-all duration-300 flex items-center gap-4 p-4 cursor-pointer overflow-hidden backdrop-blur-md hover:shadow-md"
                         style={{
                           backgroundColor: 'var(--surface)',
                           borderColor: 'var(--outline)',
@@ -661,7 +654,7 @@ export const BankManager: React.FC<Props> = ({
                         }}
                       >
                         <div
-                          className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+                          className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
                           style={{ backgroundColor: folder.color }}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -739,7 +732,7 @@ export const BankManager: React.FC<Props> = ({
                         <>
                           <button
                             onClick={handleSelectAll}
-                            className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                            className="text-xs font-medium px-3 py-1.5 rounded-full transition"
                             style={{ color: 'var(--muted)', backgroundColor: 'var(--surface2)' }}
                             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
                             onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
@@ -750,17 +743,17 @@ export const BankManager: React.FC<Props> = ({
                             <>
                               <button
                                 onClick={() => setShowMoveToFolderModal(true)}
-                                className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                                className="text-xs font-medium px-3 py-1.5 rounded-full transition"
                                 style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-container)' }}
                               >
                                 移动到 ({selectedBankIds.size})
                               </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedBankIds(new Set());
-                                  setIsSelectionMode(false);
-                                }}
-                                className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+<button
+                                  onClick={() => {
+                                    setSelectedBankIds(new Set());
+                                    setIsSelectionMode(false);
+                                  }}
+                                  className="text-xs font-medium px-3 py-1.5 rounded-full transition"
                                 style={{ color: 'var(--muted)', backgroundColor: 'var(--surface2)' }}
                               >
                                 取消
@@ -771,7 +764,7 @@ export const BankManager: React.FC<Props> = ({
                       ) : (
                         <button
                           onClick={() => setIsSelectionMode(true)}
-                          className="text-xs font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1"
+                          className="text-xs font-medium px-3 py-1.5 rounded-full transition flex items-center gap-1"
                           style={{ color: 'var(--muted)', backgroundColor: 'var(--surface2)' }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
                           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
@@ -798,7 +791,7 @@ export const BankManager: React.FC<Props> = ({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={handleSelectAll}
-                          className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                          className="text-xs font-medium px-3 py-1.5 rounded-full transition"
                           style={{ color: 'var(--muted)', backgroundColor: 'var(--surface2)' }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
                           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
@@ -809,17 +802,17 @@ export const BankManager: React.FC<Props> = ({
                           <>
                             <button
                               onClick={handleRemoveFromFolder}
-                              className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                              className="text-xs font-medium px-3 py-1.5 rounded-full transition"
                               style={{ color: 'var(--warning)', backgroundColor: 'rgba(var(--warning-rgb, 251, 191, 36), 0.15)' }}
                             >
                               移出文件夹 ({selectedBankIds.size})
                             </button>
-                            <button
-                              onClick={() => {
-                                setSelectedBankIds(new Set());
-                                setIsSelectionMode(false);
-                              }}
-                              className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+<button
+                                onClick={() => {
+                                  setSelectedBankIds(new Set());
+                                  setIsSelectionMode(false);
+                                }}
+                                className="text-xs font-medium px-3 py-1.5 rounded-full transition"
                               style={{ color: 'var(--muted)', backgroundColor: 'var(--surface2)' }}
                             >
                               取消
@@ -830,7 +823,7 @@ export const BankManager: React.FC<Props> = ({
                     ) : (
                       <button
                         onClick={() => setIsSelectionMode(true)}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1"
+                        className="text-xs font-medium px-3 py-1.5 rounded-full transition flex items-center gap-1"
                         style={{ color: 'var(--muted)', backgroundColor: 'var(--surface2)' }}
                         onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
                         onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
@@ -853,7 +846,7 @@ export const BankManager: React.FC<Props> = ({
                     return (
                       <div
                         key={bank.id}
-                        className="group relative rounded-2xl shadow-sm border transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-md"
+                        className="group relative rounded-3xl shadow-sm border transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-md"
                         style={{
                           backgroundColor: 'var(--surface)',
                           borderColor: isSelected ? 'var(--primary)' : 'var(--outline)',
@@ -892,7 +885,7 @@ export const BankManager: React.FC<Props> = ({
                         >
                           <div className="flex justify-between items-start mb-3">
                             <span
-                              className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border"
+                              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border"
                               style={{
                                 backgroundColor: 'var(--primary-container)',
                                 color: 'var(--on-primary-container)',
@@ -919,13 +912,13 @@ export const BankManager: React.FC<Props> = ({
                                   )}
                                 </div>
                               ) : (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteTarget({ id: bank.id, title: bank.title });
-                                    setDeleteConfirmOpen(true);
-                                  }}
-                                  className="transition p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100 pointer-events-auto"
+<button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteTarget({ id: bank.id, title: bank.title });
+                                setDeleteConfirmOpen(true);
+                              }}
+                              className="transition p-1 rounded-full opacity-0 group-hover:opacity-100 focus:opacity-100 pointer-events-auto"
                                   style={{ color: 'var(--danger)', backgroundColor: 'var(--surface2)' }}
                                   title="删除题库"
                                 >
@@ -957,7 +950,7 @@ export const BankManager: React.FC<Props> = ({
                               {bank.tags.slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="px-2 py-0.5 text-[10px] uppercase tracking-wide font-medium rounded"
+                                  className="px-2 py-0.5 text-[10px] uppercase tracking-wide font-medium rounded-full"
                                   style={{
                                     backgroundColor: 'var(--surface2)',
                                     color: 'var(--muted)',
@@ -977,12 +970,11 @@ export const BankManager: React.FC<Props> = ({
                           )}
                         </div>
 
-                        <div
-                          className="px-6 py-4 border-t flex flex-col gap-2 relative z-20"
-                          style={{
-                            borderColor: 'var(--outline)',
-                            backgroundColor: 'var(--surface2)',
-                          }}
+<div
+               className="p-5 border-b flex justify-between items-center bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xl"
+               style={{
+                 borderColor: 'var(--outline)',
+               }}
                         >
                           {(() => {
                             const savedProgressKey = `qb_progress_${bank.id}`;
@@ -991,7 +983,7 @@ export const BankManager: React.FC<Props> = ({
 
                             return hasProgress ? (
                               <div
-                                className="group flex items-center gap-2 text-xs px-3 py-2 rounded-lg border"
+                                className="group flex items-center gap-2 text-xs px-3 py-2 rounded-full border"
                                 style={{
                                   color: 'var(--warning)',
                                   backgroundColor: 'rgba(var(--warning-rgb, 251, 191, 36), 0.15)',
@@ -1012,7 +1004,7 @@ export const BankManager: React.FC<Props> = ({
                                     setTargetBankId(bank.id);
                                     setClearConfirmOpen(true);
                                   }}
-                                  className="ml-auto opacity-0 group-hover:opacity-100 transition p-1.5 rounded hover:bg-black/5 dark:hover:bg-white/10"
+                                  className="ml-auto opacity-0 group-hover:opacity-100 transition p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
                                   aria-label="清除未完成记录"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1025,7 +1017,7 @@ export const BankManager: React.FC<Props> = ({
                           <div className="flex items-center gap-3">
                             <button
                               onClick={() => onSelect(bank, enableBatchMode ? batchSize : undefined)}
-                              className="flex-1 font-bold py-2 px-4 rounded-lg text-sm transition"
+                              className="flex-1 font-bold py-2 px-4 rounded-full text-sm transition"
                               style={{
                                 backgroundColor: 'var(--primary)',
                                 color: 'var(--on-primary)',
@@ -1042,7 +1034,7 @@ export const BankManager: React.FC<Props> = ({
                             {bankSessions.length > 0 && (
                               <button
                                 onClick={() => setHistoryModalBankId(bank.id)}
-                                className="p-2 rounded-lg border border-transparent transition"
+                                className="p-2 rounded-full border border-transparent transition"
                                 style={{ color: 'var(--muted)' }}
                                 onMouseEnter={(e) => {
                                   e.currentTarget.style.color = 'var(--text)';
@@ -1076,10 +1068,9 @@ export const BankManager: React.FC<Props> = ({
       {showPasteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden border border-white/20 dark:border-white/10 ring-1 ring-white/10 supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35"
             style={{
-              backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
-              borderColor: 'var(--outline)',
+              backdropFilter: 'blur(24px)',
             }}
           >
             <div
@@ -1115,13 +1106,13 @@ export const BankManager: React.FC<Props> = ({
                 </svg>
               </button>
             </div>
-            <div className="p-0 flex-1 overflow-hidden relative group">
-              <textarea
-                className="w-full h-full p-5 font-mono text-xs leading-relaxed focus:outline-none resize-none"
-                style={{
-                  backgroundColor: 'var(--surface2)',
-                  color: 'var(--text)',
-                }}
+            <div className="p-5 flex-1 overflow-hidden relative group min-h-[300px]">
+<textarea
+                 className="w-full h-full p-5 font-mono text-xs leading-relaxed focus:outline-none resize-none min-h-[300px]"
+                 style={{
+                   backgroundColor: 'transparent',
+                   color: 'var(--text)',
+                 }}
                 placeholder="在此粘贴 Schema V2 JSON 内容（也兼容 V1 格式）..."
                 value={pasteContent}
                 onChange={(e) => setPasteContent(e.target.value)}
@@ -1136,9 +1127,9 @@ export const BankManager: React.FC<Props> = ({
                 backgroundColor: 'var(--surface2)',
               }}
             >
-              <button
-                onClick={() => setShowPasteModal(false)}
-                className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+<button
+              onClick={() => setShowPasteModal(false)}
+              className="px-5 py-2.5 text-sm font-semibold rounded-full transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1154,7 +1145,7 @@ export const BankManager: React.FC<Props> = ({
               <button
                 onClick={handlePasteImport}
                 disabled={!pasteContent.trim()}
-                className="px-6 py-2.5 text-sm font-bold rounded-xl transition transform active:scale-95"
+                className="px-6 py-2.5 text-sm font-bold rounded-full transition transform active:scale-95"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',
@@ -1181,7 +1172,7 @@ export const BankManager: React.FC<Props> = ({
       {showFormatModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
             style={{
               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
               borderColor: 'var(--outline)',
@@ -1235,16 +1226,15 @@ export const BankManager: React.FC<Props> = ({
                 {formatSpec}
               </pre>
             </div>
-            <div
-              className="p-5 border-t flex justify-end"
-              style={{
-                borderColor: 'var(--outline)',
-                backgroundColor: 'var(--surface)',
-              }}
+<div
+               className="p-5 border-t flex justify-end gap-3 bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xl"
+               style={{
+                 borderColor: 'var(--outline)',
+               }}
             >
-              <button
-                onClick={() => setShowFormatModal(false)}
-                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+<button
+              onClick={() => setShowFormatModal(false)}
+              className="px-6 py-2.5 text-sm font-bold rounded-full transition"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',
@@ -1262,7 +1252,7 @@ export const BankManager: React.FC<Props> = ({
       {historyModalBankId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
             style={{
               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
               borderColor: 'var(--outline)',
@@ -1352,7 +1342,7 @@ export const BankManager: React.FC<Props> = ({
       {showFolderModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
             style={{
               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
               borderColor: 'var(--outline)',
@@ -1410,12 +1400,12 @@ export const BankManager: React.FC<Props> = ({
                 <label className="block text-sm font-bold mb-2" style={{ color: 'var(--text)' }}>
                   选择颜色
                 </label>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-6 gap-3 p-4 justify-items-center">
                   {FOLDER_COLORS.map((color) => (
                     <button
                       key={color}
                       onClick={() => setFolderFormData({ ...folderFormData, color })}
-                      className="w-10 h-10 rounded-lg transition transform hover:scale-110"
+                      className="w-10 h-10 rounded-full transition transform hover:scale-110"
                       style={{
                         backgroundColor: color,
                         border: folderFormData.color === color ? '3px solid var(--text)' : '3px solid transparent',
@@ -1442,18 +1432,14 @@ export const BankManager: React.FC<Props> = ({
                   onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--ring)')}
                   onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--outline)')}
                 />
-              </div>
+</div>
             </div>
             <div
-              className="p-5 border-t flex justify-end gap-3"
-              style={{
-                borderColor: 'var(--outline)',
-                backgroundColor: 'var(--surface2)',
-              }}
+              className="p-5 border-t flex justify-end gap-3 bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xl border-white/10"
             >
               <button
-                onClick={() => setShowFolderModal(false)}
-                className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+              onClick={() => setShowFolderModal(false)}
+              className="px-5 py-2.5 text-sm font-semibold rounded-full transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1469,7 +1455,7 @@ export const BankManager: React.FC<Props> = ({
               <button
                 onClick={handleSaveFolder}
                 disabled={!folderFormData.name.trim()}
-                className="px-6 py-2.5 text-sm font-bold rounded-xl transition"
+                className="px-6 py-2.5 text-sm font-bold rounded-full transition"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',
@@ -1496,7 +1482,7 @@ export const BankManager: React.FC<Props> = ({
       {showMoveToFolderModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div
-            className="backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
+            className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden transition-colors border"
             style={{
               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.45)',
               borderColor: 'var(--outline)',
@@ -1546,7 +1532,7 @@ export const BankManager: React.FC<Props> = ({
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                       style={{ backgroundColor: folder.color }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1567,16 +1553,12 @@ export const BankManager: React.FC<Props> = ({
                 ))
               )}
             </div>
-            <div
-              className="p-5 border-t flex justify-end"
-              style={{
-                borderColor: 'var(--outline)',
-                backgroundColor: 'var(--surface2)',
-              }}
+<div
+              className="p-5 border-b flex justify-between items-center bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xl border-white/10"
             >
               <button
                 onClick={() => setShowMoveToFolderModal(false)}
-                className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                className="px-5 py-2.5 text-sm font-semibold rounded-full transition"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)';
@@ -1608,7 +1590,7 @@ export const BankManager: React.FC<Props> = ({
             />
 
             <div
-              className="fixed left-1/2 top-1/2 z-[10000] -translate-x-1/2 -translate-y-1/2 w-[min(92vw,420px)] rounded-2xl border shadow-2xl ring-1 ring-white/10 p-5 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/40 dark:bg-zinc-900/40"
+              className="fixed left-1/2 top-1/2 z-[10000] -translate-x-1/2 -translate-y-1/2 w-[min(92vw,420px)] rounded-3xl border shadow-2xl ring-1 ring-white/10 p-5 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/40 dark:bg-zinc-900/40"
               style={{
                 WebkitBackdropFilter: 'blur(18px) saturate(160%)',
                 backdropFilter: 'blur(18px) saturate(160%)',
@@ -1628,7 +1610,7 @@ export const BankManager: React.FC<Props> = ({
                     setDeleteConfirmOpen(false);
                     setDeleteTarget(null);
                   }}
-                  className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                  className="px-5 py-2.5 text-sm font-semibold rounded-full transition"
                   style={{ color: 'var(--muted)' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--text)';
@@ -1647,7 +1629,7 @@ export const BankManager: React.FC<Props> = ({
                     setDeleteConfirmOpen(false);
                     setDeleteTarget(null);
                   }}
-                  className="px-5 py-2.5 text-sm font-bold rounded-xl transition"
+                  className="px-5 py-2.5 text-sm font-bold rounded-full transition"
                   style={{
                     backgroundColor: 'var(--danger)',
                     color: 'var(--on-primary)',
@@ -1677,7 +1659,7 @@ export const BankManager: React.FC<Props> = ({
             />
 
             <div
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,420px)] z-[9999] rounded-2xl border shadow-2xl p-5 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/40 dark:bg-zinc-900/40"
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,420px)] z-[9999] rounded-3xl border shadow-2xl p-5 ring-1 ring-white/10 animate-fade-in-down supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/40 dark:bg-zinc-900/40"
               style={{
                 WebkitBackdropFilter: 'blur(18px) saturate(160%)',
                 backdropFilter: 'blur(18px) saturate(160%)',
@@ -1697,7 +1679,7 @@ export const BankManager: React.FC<Props> = ({
                     setClearConfirmOpen(false);
                     setTargetBankId(null);
                   }}
-                  className="px-5 py-2.5 text-sm font-semibold rounded-xl transition"
+                  className="px-5 py-2.5 text-sm font-semibold rounded-full transition"
                   style={{ color: 'var(--muted)' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--text)';
@@ -1712,7 +1694,7 @@ export const BankManager: React.FC<Props> = ({
                 </button>
                 <button
                   onClick={() => handleClearIncompleteProgress(targetBankId)}
-                  className="px-5 py-2.5 text-sm font-bold rounded-xl transition"
+                  className="px-5 py-2.5 text-sm font-bold rounded-full transition"
                   style={{
                     backgroundColor: 'var(--warning)',
                     color: 'var(--on-primary)',
