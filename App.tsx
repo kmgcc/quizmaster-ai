@@ -360,28 +360,28 @@ const App: React.FC = () => {
       } as React.CSSProperties}
     >
       
-      {/* Header with Glassmorphism (iOS Safari Compatible) */}
+      {/* Header - Lightweight with blur */}
       <header 
-        className="fixed top-0 left-0 right-0 z-50 w-full glass glass-header border-b transition-colors duration-300"
+        className="fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300"
         style={{ 
-          ['--topbar-h' as any]: '64px',
-          backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.3)',
-          borderColor: 'var(--outline)',
-          WebkitBackdropFilter: 'blur(12px) saturate(150%)',
-          backdropFilter: 'blur(12px) saturate(150%)',
+          ['--topbar-h' as any]: '48px',
+          backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.05)',
+          borderBottom: '1px solid rgba(var(--surface-rgb, 255, 255, 255), 0.08)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          backdropFilter: 'blur(20px) saturate(180%)',
         } as React.CSSProperties}
       >
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative z-10">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setView('home')}>
-            <img src={logoSrc} alt="QuizMaster AI" className="w-8 h-8 rounded-lg shadow-lg object-cover transition-all duration-300 group-hover:scale-110" />
-            <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>QuizMaster AI</h1>
+            <img src={logoSrc} alt="QuizMaster AI" className="w-6 h-6 rounded-lg shadow-sm object-cover transition-all duration-300 group-hover:scale-110" />
+            <h1 className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>QuizMaster AI</h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
              <div className="relative" ref={settingsRef}>
                 <button 
                   onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 rounded-full transition"
+                  className="p-1.5 rounded-full transition"
                   style={{ 
                     color: 'var(--muted)',
                     backgroundColor: showSettings ? 'var(--surface2)' : 'transparent',
@@ -390,7 +390,7 @@ const App: React.FC = () => {
                   onMouseLeave={(e) => !showSettings && (e.currentTarget.style.backgroundColor = 'transparent')}
                   title="设置与主题"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -409,8 +409,7 @@ const App: React.FC = () => {
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    {/* Header - Fixed at top */}
-                    <div className="p-4 shrink-0 sticky top-0 backdrop-blur-xl bg-white/20 dark:bg-zinc-900/20 border-b border-white/10">
+                    <div className="p-3 shrink-0 sticky top-0 backdrop-blur-xl bg-white/15 dark:bg-zinc-900/15 shadow-sm">
                       {/* Theme Mode Toggle */}
                       <div>
                          <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--muted)' }}>显示模式</p>
@@ -550,24 +549,24 @@ const App: React.FC = () => {
                             <span className="text-lg"></span>开发者测试
                          </button>
                       </div>
-                    </div>
-                  </div>,
-                  document.body
-                )}
-             </div>
-          </div>
-        </div>
-      </header>
+                     </div>
+                    </div>,
+                   document.body
+                 )}
+              </div>
+           </div>
+         </div>
+       </header>
 
       {/* Main Content */}
       {(() => {
-        // review 模式：固定全屏容器，延伸到 banner 下方
+        // review 模式：固定全屏容器
         if (view === 'review') {
           return (
             <main 
               className="fixed inset-0 overflow-hidden z-10"
               style={{
-                ['--content-safe-top' as any]: 'calc(var(--topbar-h, 64px) + 12px)',
+                ['--content-safe-top' as any]: 'calc(var(--topbar-h, 48px) + 12px)',
                 ['--content-safe-bottom' as any]: 'max(12px, env(safe-area-inset-bottom, 0px))',
               } as React.CSSProperties}
             >
@@ -595,7 +594,7 @@ const App: React.FC = () => {
             <main 
               className="fixed inset-x-0 overflow-hidden z-10"
               style={{
-                top: 'calc(var(--topbar-h, 64px) + 16px)',
+                top: 'calc(var(--topbar-h, 48px) + 12px)',
                 bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
               } as React.CSSProperties}
             >
@@ -617,7 +616,7 @@ const App: React.FC = () => {
         
         // 首页/测试页：允许页面滚动
         return (
-          <main className={`max-w-7xl mx-auto px-4 relative z-10 py-8 pt-[calc(var(--topbar-h,64px)+16px)]`}>
+          <main className={`max-w-7xl mx-auto px-4 relative z-10 py-6 pt-[calc(var(--topbar-h,48px)+16px)]`}>
               {view === 'home' && (
                 <BankManager
                   banks={banks}

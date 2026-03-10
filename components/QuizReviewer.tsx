@@ -334,10 +334,10 @@ export const QuizReviewer: React.FC<Props> = ({
                 )}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
                 <button 
                   onClick={onRetake} 
-                  className="w-full px-6 py-3 font-bold rounded-full transition"
+                  className="w-full px-4 py-2.5 font-bold rounded-full transition text-sm"
                   style={{ 
                     backgroundColor: 'var(--primary)',
                     color: 'var(--on-primary)',
@@ -349,7 +349,7 @@ export const QuizReviewer: React.FC<Props> = ({
                 </button>
                 <button 
                   onClick={onExit} 
-                  className="w-full px-6 py-3 font-bold rounded-full border transition"
+                  className="w-full px-4 py-2.5 font-bold rounded-full border transition text-sm"
                   style={{
                     backgroundColor: 'var(--surface)',
                     color: 'var(--text)',
@@ -500,13 +500,42 @@ export const QuizReviewer: React.FC<Props> = ({
           </details>
         )}
 
-        {/* Interim Header */}
+        {/* Interim Header with blur */}
         {isInterim && (
-           <div className="mb-4 flex items-center justify-between shrink-0">
-              <div>
-                 <h2 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>阶段小结</h2>
-                 <p className="text-sm" style={{ color: 'var(--muted)' }}>本组共 {totalQuestions} 题，答对 {correctCount} 题。</p>
+           <div 
+             className="mb-3 flex items-center justify-between shrink-0 px-3 py-1.5 rounded-lg backdrop-blur-xl"
+             style={{ 
+               backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.15)',
+               border: '1px solid rgba(var(--surface-rgb, 255, 255, 255), 0.1)',
+             }}
+           >
+              <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: 'var(--primary-container)', color: 'var(--on-primary-container)' }}>
+                    {correctCount}/{totalQuestions}
+                 </div>
+                 <div>
+                    <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>阶段小结</h2>
+                    <p className="text-xs" style={{ color: 'var(--muted)' }}>本组共 {totalQuestions} 题，答对 {correctCount} 题</p>
+                 </div>
               </div>
+              <button
+                onClick={onExit}
+                className="px-3 py-1.5 rounded-full text-xs font-medium transition"
+                style={{ 
+                  color: 'var(--muted)',
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--muted)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                退出
+              </button>
            </div>
         )}
 
@@ -519,7 +548,7 @@ export const QuizReviewer: React.FC<Props> = ({
           } as React.CSSProperties}
         >
           {/* Mobile top spacer - prevent content from being hidden by floating card */}
-          <div className="md:hidden h-40"></div>
+          {!isInterim && <div className="md:hidden h-40"></div>}
           
           {/* Notes Summary Section - Only show in final review (not interim) if there are notes */}
           {!isInterim && notesCount > 0 && (
@@ -780,10 +809,10 @@ export const QuizReviewer: React.FC<Props> = ({
 
         {/* Interim Continue Button */}
         {isInterim && onContinue && (
-          <div className="shrink-0 p-4 bg-white/45 dark:bg-zinc-900/35 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up" style={{ paddingBottom: 'calc(var(--content-safe-bottom) + 16px)' }}>
+          <div className="shrink-0 px-3 pt-2 pb-3 backdrop-blur-xl border-t flex justify-center z-10 animate-slide-up" style={{ backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.15)', borderColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.1)', paddingBottom: 'calc(var(--content-safe-bottom) + 8px)' }}>
               <button 
                 onClick={onContinue}
-                className="px-12 py-3 text-white text-lg font-bold rounded-full transition transform active:scale-95 flex items-center gap-2"
+                className="px-8 py-2.5 text-sm font-bold rounded-full transition transform active:scale-95 flex items-center gap-1.5"
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--on-primary)',
@@ -792,7 +821,7 @@ export const QuizReviewer: React.FC<Props> = ({
                 onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 继续答题
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                 </svg>
               </button>

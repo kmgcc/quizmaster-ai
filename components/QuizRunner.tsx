@@ -438,115 +438,113 @@ export const QuizRunner: React.FC<Props> = ({ bank, onComplete, onExit, batchSiz
           </div>
        </div>
 
-       {/* Center: Main Question Card with Glassmorphism Header */}
-       <div 
-         className="flex-1 flex flex-col rounded-3xl border shadow-sm overflow-hidden relative transition-colors"
-         style={{ 
-           backgroundColor: 'var(--surface)',
-           borderColor: 'var(--outline)',
-         }}
-       >
-           {/* Scrollable Content Area - Content goes first so it can scroll behind header */}
-           <div className="flex-1 overflow-y-auto glass-content-area">
-              {/* Glass Header - Sticky positioned inside scroll container */}
-              <div className="sticky top-0 z-50 glass-header">
-                 <div 
-                   className="px-6 py-4 border-b flex justify-between items-center"
-                   style={{ borderColor: 'var(--outline)' }}
+        {/* Center: Main Question Card */}
+        <div 
+          className="flex-1 flex flex-col rounded-3xl border shadow-sm overflow-hidden relative transition-colors"
+          style={{ 
+            backgroundColor: 'var(--surface)',
+            borderColor: 'var(--outline)',
+          }}
+        >
+            {/* Header with blur */}
+            <div 
+              className="px-4 py-2 flex justify-between items-center shrink-0"
+              style={{ 
+                borderBottom: '1px solid rgba(var(--surface-rgb, 255, 255, 255), 0.06)',
+                backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.03)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                backdropFilter: 'blur(16px) saturate(150%)',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                 <button 
+                   onClick={onExit} 
+                   className="md:hidden transition p-1 rounded-full"
+                   style={{ color: 'var(--muted)' }}
+                   onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+                   onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
                  >
-                    <div className="flex items-center gap-4 relative z-10">
-                       <button 
-                         onClick={onExit} 
-                         className="md:hidden transition"
-                         style={{ color: 'var(--muted)' }}
-                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
-                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
-                       >
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                          </svg>
-                       </button>
-                       <div>
-                          <span 
-                            className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider mb-1"
-                            style={{ 
-                              backgroundColor: 'var(--surface2)',
-                              color: 'var(--muted)',
-                            }}
-                          >
-                              {currentQ.type.replace('_', ' ')}
-                          </span>
-                          <div className="text-xl font-bold flex items-baseline gap-2" style={{ color: 'var(--text)' }}>
-                          第 {currentIndex + 1} 题 <span className="text-sm font-normal hidden sm:inline" style={{ color: 'var(--muted)' }}>/ {questions.length}</span>
-                          </div>
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 relative z-10">
-<button
-                          onClick={onExit} 
-                          className="hidden md:flex items-center gap-1 text-sm font-medium transition px-3 py-1.5 rounded-full"
-                         style={{ color: 'var(--muted)' }}
-                         onMouseEnter={(e) => {
-                           e.currentTarget.style.color = 'var(--text)';
-                           e.currentTarget.style.backgroundColor = 'var(--surface2)';
-                         }}
-                         onMouseLeave={(e) => {
-                           e.currentTarget.style.color = 'var(--muted)';
-                           e.currentTarget.style.backgroundColor = 'transparent';
-                         }}
-                       >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
-                          退出
-                       </button>
-                       <div className="text-right lg:hidden">
-                          <div className="text-sm font-bold" style={{ color: 'var(--text)' }}>{currentIndex + 1} / {questions.length}</div>
-                       </div>
-                    </div>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                 </button>
+                 <div className="flex items-center gap-2">
+                    <span 
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                      style={{ color: 'var(--muted)' }}
+                    >
+                      {currentQ.type.replace('_', ' ')}
+                    </span>
+                    <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                      {currentIndex + 1}/{questions.length}
+                    </span>
                  </div>
               </div>
-
-              {/* Question Content - Can scroll under the header */}
-              <div className="p-6 pb-32 lg:px-12 relative">
-              {isGradingAI ? (
-                <div className="flex flex-col items-center justify-center min-h-full space-y-6 animate-fade-in">
-                    <div className="relative">
-                        <div 
-                          className="w-16 h-16 border-4 rounded-full animate-spin"
-                          style={{ 
-                            borderColor: 'var(--primary-container)',
-                            borderTopColor: 'var(--primary)',
-                          }}
-                        ></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-lg">🤖</span>
-                        </div>
-                    </div>
-                    <p className="font-medium" style={{ color: 'var(--text)' }}>AI 正在批改答案并生成阶段小结...</p>
-                </div>
-              ) : (
-                <div className="min-h-[150vh] pb-20">
-                  <QuestionRenderer 
-                      question={currentQ}
-                      currentAnswer={currentAnswer}
-                      onChange={setCurrentAnswer}
-                      disabled={false}
-                      showFeedback={false}
-                  />
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                 <button
+                   onClick={onExit} 
+                   className="hidden md:flex items-center gap-1 text-xs font-medium transition px-2 py-1 rounded-full"
+                  style={{ color: 'var(--muted)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--text)';
+                    e.currentTarget.style.backgroundColor = 'var(--surface2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--muted)';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                   </svg>
+                   退出
+                </button>
               </div>
-           </div>
+            </div>
 
-           {/* Footer Controls - Outside scroll container */}
-           <div 
-             className="p-6 border-t flex justify-between items-center relative z-20"
-             style={{ 
-               borderColor: 'var(--outline)',
-               backgroundColor: 'var(--surface2)',
-             }}
-           >
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto">
+               <div className="p-6 lg:px-12">
+               {isGradingAI ? (
+                 <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6 animate-fade-in">
+                     <div className="relative">
+                         <div 
+                           className="w-16 h-16 border-4 rounded-full animate-spin"
+                           style={{ 
+                             borderColor: 'var(--primary-container)',
+                             borderTopColor: 'var(--primary)',
+                           }}
+                         ></div>
+                         <div className="absolute inset-0 flex items-center justify-center">
+                             <span className="text-lg">🤖</span>
+                         </div>
+                     </div>
+                     <p className="font-medium" style={{ color: 'var(--text)' }}>AI 正在批改答案并生成阶段小结...</p>
+                 </div>
+               ) : (
+                 <div className="pb-20">
+                   <QuestionRenderer 
+                       question={currentQ}
+                       currentAnswer={currentAnswer}
+                       onChange={setCurrentAnswer}
+                       disabled={false}
+                       showFeedback={false}
+                   />
+                 </div>
+               )}
+               </div>
+            </div>
+
+             {/* Bottom Control Bar with blur */}
+             <div 
+               className="sticky bottom-0 px-4 py-2 flex justify-between items-center shrink-0"
+               style={{ 
+                 borderTop: '1px solid rgba(var(--surface-rgb, 255, 255, 255), 0.06)',
+                 backgroundColor: 'rgba(var(--surface-rgb, 255, 255, 255), 0.03)',
+                 WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                 backdropFilter: 'blur(16px) saturate(150%)',
+               }}
+             >
 <button 
                  onClick={handlePrev} 
                  disabled={currentIndex === 0 || isGradingAI}

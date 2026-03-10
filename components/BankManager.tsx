@@ -340,7 +340,7 @@ export const BankManager: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
-      <div className="w-full lg:w-80 shrink-0 space-y-6 lg:sticky lg:top-24">
+      <div className="w-full lg:w-80 shrink-0 space-y-6">
 <div
             className="backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] overflow-hidden border border-white/20 dark:border-white/10 ring-1 ring-white/10 supports-[backdrop-filter]:bg-white/25 supports-[backdrop-filter]:dark:bg-zinc-900/25 bg-white/35 dark:bg-zinc-900/35"
             style={{

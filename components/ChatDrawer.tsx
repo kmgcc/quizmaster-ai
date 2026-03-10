@@ -799,7 +799,7 @@ export const ChatDrawer: React.FC<Props> = ({
         style={{
           position: 'fixed',
           right: '16px',
-          top: 'calc(var(--topbar-h, 64px) + 16px)',
+          top: 'calc(var(--topbar-h, 48px) + 12px)',
           bottom: '16px',
           zIndex: 100,
           backgroundColor: 'var(--surface)',
