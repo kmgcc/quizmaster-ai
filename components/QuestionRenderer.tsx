@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Question, QuestionType } from '../types';
 import { highlightCode } from '../utils/codeHighlighter';
+import { glowUtils } from '../hooks/useGlowManager';
 
 interface Props {
   question: Question;
@@ -87,6 +88,12 @@ const renderMarkdownText = (text: string): React.ReactNode => {
 
 export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onChange, disabled, showFeedback, isCorrect, themeColor }) => {
   
+  const glowRef = useCallback((node: HTMLElement | null) => {
+    if (node) {
+      glowUtils.register(node);
+    }
+  }, []);
+
   const getOptionClass = (isSelected: boolean, isCorrectKey: boolean) => {
     return "relative group w-full text-left p-4 rounded-full border-2 transition-all flex items-center justify-between overflow-hidden ";
   };
@@ -141,16 +148,16 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
         {/* Spotlight Overlay */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
         style={{
-            background: `radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), rgba(var(--theme-rgb), 0.1), transparent 100%)`,
-            backgroundAttachment: 'fixed'
+            background: `radial-gradient(150px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.1), transparent 100%)`,
+            borderRadius: 'inherit',
         }}
         />
         {/* Border Spotlight Overlay (Masked) */}
         <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 pointer-events-none"
         style={{
-            background: `radial-gradient(120px circle at var(--mouse-x) var(--mouse-y), rgba(var(--theme-rgb), 0.8), transparent 100%)`,
-            backgroundAttachment: 'fixed',
-            padding: '2px', // Border width
+            background: `radial-gradient(120px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.8), transparent 100%)`,
+            padding: '2px',
+            borderRadius: 'inherit',
             mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             maskComposite: 'exclude',
             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
@@ -179,6 +186,7 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
               return (
                 <button
                   key={opt.key}
+                  ref={glowRef}
                   onClick={() => !disabled && onChange && onChange(opt.key)}
                   disabled={disabled}
                   className={getOptionClass(isSelected, isCorrectKey)}
@@ -224,6 +232,7 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
                 return (
                   <button
                     key={opt.key}
+                    ref={glowRef}
                     onClick={() => !disabled && toggle()}
                     disabled={disabled}
                     className={getOptionClass(isSelected, isCorrectKey)}
@@ -280,6 +289,7 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
               return (
                 <button
                   key={String(val)}
+                  ref={glowRef}
                   onClick={() => !disabled && onChange && onChange(val)}
                   disabled={disabled}
                   className={className}

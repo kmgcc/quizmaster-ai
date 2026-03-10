@@ -1,8 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { QuestionBank, QuizSession, Folder, BankFolderMap } from '../types';
 import { validateQuestionBank } from '../services/validator';
 import { SAMPLE_BANK } from '../constants';
+import { glowUtils } from '../hooks/useGlowManager';
 
 interface Props {
   banks: QuestionBank[];
@@ -54,6 +55,12 @@ export const BankManager: React.FC<Props> = ({
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [selectedBankIds, setSelectedBankIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+
+  const glowRef = useCallback((node: HTMLElement | null) => {
+    if (node) {
+      glowUtils.register(node);
+    }
+  }, []);
 
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
@@ -350,10 +357,10 @@ export const BankManager: React.FC<Props> = ({
             </p>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3" style={{ minHeight: '140px' }}>
                 <button
                   onClick={() => setShowPasteModal(true)}
-                  className="row-span-2 flex flex-col items-center justify-center gap-2 px-4 py-8 text-sm font-medium border rounded-3xl transition shadow-sm"
+                  className="row-span-1 flex flex-col items-center justify-center gap-2 px-4 text-sm font-medium border rounded-3xl transition shadow-sm h-full"
                   style={{
                     color: 'var(--text)',
                     backgroundColor: 'var(--surface)',
@@ -374,10 +381,10 @@ export const BankManager: React.FC<Props> = ({
                   粘贴 JSON
                 </button>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 h-full">
                   <button
                     onClick={loadSample}
-                    className="flex items-center justify-center px-4 py-2 text-sm font-bold rounded-full transition border"
+                    className="flex items-center justify-center px-4 py-3 text-sm font-bold rounded-full transition border shrink-0"
                     style={{
                       color: 'var(--on-primary-container)',
                       backgroundColor: 'var(--primary-container)',
@@ -392,7 +399,7 @@ export const BankManager: React.FC<Props> = ({
                   <input type="file" accept=".json" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 flex flex-col items-center justify-center gap-1 px-4 text-sm font-medium rounded-full transition min-h-[80px]"
+                    className="flex-1 flex flex-col items-center justify-center gap-1 px-4 text-sm font-medium rounded-full transition"
                     style={{
                       color: 'var(--on-primary)',
                       backgroundColor: 'var(--primary)',
@@ -644,6 +651,7 @@ export const BankManager: React.FC<Props> = ({
                     return (
                       <div
                         key={folder.id}
+                        ref={glowRef}
                         onClick={() => handleEnterFolder(folder.id)}
                         className="group relative rounded-2xl shadow-sm border transition-all duration-300 flex items-center gap-4 p-4 cursor-pointer overflow-hidden backdrop-blur-md hover:shadow-md"
                         style={{
@@ -659,6 +667,25 @@ export const BankManager: React.FC<Props> = ({
                           e.currentTarget.style.transform = 'translateY(0)';
                         }}
                       >
+                        <div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
+                          style={{
+                            background: `radial-gradient(300px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.1), transparent 100%)`,
+                            borderRadius: 'inherit',
+                          }}
+                        />
+                        <div
+                          className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 pointer-events-none"
+                          style={{
+                            background: `radial-gradient(200px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.6), transparent 100%)`,
+                            padding: '1px',
+                            borderRadius: 'inherit',
+                            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                            maskComposite: 'exclude',
+                            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                            WebkitMaskComposite: 'xor',
+                          }}
+                        />
                         <div
                           className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
                           style={{ backgroundColor: folder.color }}
@@ -852,6 +879,7 @@ export const BankManager: React.FC<Props> = ({
                     return (
                       <div
                         key={bank.id}
+                        ref={glowRef}
                         className="group relative rounded-3xl shadow-sm border transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur-md"
                         style={{
                           backgroundColor: 'var(--surface)',
@@ -862,16 +890,16 @@ export const BankManager: React.FC<Props> = ({
                         <div
                           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
                           style={{
-                            background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(var(--theme-rgb), 0.1), transparent 100%)`,
-                            backgroundAttachment: 'fixed',
+                            background: `radial-gradient(400px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.1), transparent 100%)`,
+                            borderRadius: 'inherit',
                           }}
                         />
                         <div
                           className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 pointer-events-none"
                           style={{
-                            background: `radial-gradient(250px circle at var(--mouse-x) var(--mouse-y), rgba(var(--theme-rgb), 0.6), transparent 100%)`,
-                            backgroundAttachment: 'fixed',
+                            background: `radial-gradient(250px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.6), transparent 100%)`,
                             padding: '1px',
+                            borderRadius: 'inherit',
                             mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                             maskComposite: 'exclude',
                             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
@@ -976,89 +1004,94 @@ export const BankManager: React.FC<Props> = ({
                           )}
                         </div>
 
-<div
-               className="p-5 border-b flex justify-between items-center bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xl"
-               style={{
-                 borderColor: 'var(--outline)',
-               }}
+                        <div
+                          className="px-6 py-4 border-t flex flex-col gap-3 w-full"
+                          style={{
+                            borderColor: 'var(--outline)',
+                            backgroundColor: 'var(--surface2)',
+                          }}
                         >
-                          {(() => {
-                            const savedProgressKey = `qb_progress_${bank.id}`;
-                            const savedProgress = localStorage.getItem(savedProgressKey);
-                            const hasProgress = savedProgress !== null;
+                          <div className="flex flex-col gap-2 w-full">
+                            {(() => {
+                              const savedProgressKey = `qb_progress_${bank.id}`;
+                              const savedProgress = localStorage.getItem(savedProgressKey);
+                              const hasProgress = savedProgress !== null;
 
-                            return hasProgress ? (
-                              <div
-                                className="group flex items-center gap-2 text-xs px-3 py-2 rounded-full border"
-                                style={{
-                                  color: 'var(--warning)',
-                                  backgroundColor: 'rgba(var(--warning-rgb, 251, 191, 36), 0.15)',
-                                  borderColor: 'var(--warning)',
-                                }}
-                              >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                                <span className="font-medium">有未完成的答题记录</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setTargetBankId(bank.id);
-                                    setClearConfirmOpen(true);
+                              return hasProgress ? (
+                                <div
+                                  className="group flex items-center justify-between gap-2 text-xs px-3 py-2 rounded-full border w-full"
+                                  style={{
+                                    color: 'var(--warning)',
+                                    backgroundColor: 'rgba(var(--warning-rgb, 251, 191, 36), 0.15)',
+                                    borderColor: 'var(--warning)',
                                   }}
-                                  className="ml-auto opacity-0 group-hover:opacity-100 transition p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
-                                  aria-label="清除未完成记录"
                                 >
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                    <span className="font-medium">有未完成的答题记录</span>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTargetBankId(bank.id);
+                                      setClearConfirmOpen(true);
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 transition p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+                                    aria-label="清除未完成记录"
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ) : null;
+                            })()}
+                            <div className="flex items-center gap-3 w-full">
+                              <button
+                                onClick={() => onSelect(bank, enableBatchMode ? batchSize : undefined)}
+                                className="flex-1 font-bold py-2.5 px-4 rounded-full text-sm transition w-full"
+                                style={{
+                                  backgroundColor: 'var(--primary)',
+                                  color: 'var(--on-primary)',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                              >
+                                {(() => {
+                                  const savedProgressKey = `qb_progress_${bank.id}`;
+                                  const savedProgress = localStorage.getItem(savedProgressKey);
+                                  return savedProgress ? '继续答题' : '开始练习';
+                                })()}
+                              </button>
+                              {bankSessions.length > 0 && (
+                                <button
+                                  onClick={() => setHistoryModalBankId(bank.id)}
+                                  className="p-2.5 rounded-full border border-transparent transition shrink-0"
+                                  style={{ color: 'var(--muted)' }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = 'var(--text)';
+                                    e.currentTarget.style.backgroundColor = 'var(--surface)';
+                                    e.currentTarget.style.borderColor = 'var(--outline)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = 'var(--muted)';
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.borderColor = 'transparent';
+                                  }}
+                                  title="查看历史记录"
+                                >
+                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                 </button>
-                              </div>
-                            ) : null;
-                          })()}
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => onSelect(bank, enableBatchMode ? batchSize : undefined)}
-                              className="flex-1 font-bold py-2 px-4 rounded-full text-sm transition"
-                              style={{
-                                backgroundColor: 'var(--primary)',
-                                color: 'var(--on-primary)',
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                            >
-                              {(() => {
-                                const savedProgressKey = `qb_progress_${bank.id}`;
-                                const savedProgress = localStorage.getItem(savedProgressKey);
-                                return savedProgress ? '继续答题' : '开始练习';
-                              })()}
-                            </button>
-                            {bankSessions.length > 0 && (
-                              <button
-                                onClick={() => setHistoryModalBankId(bank.id)}
-                                className="p-2 rounded-full border border-transparent transition"
-                                style={{ color: 'var(--muted)' }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.color = 'var(--text)';
-                                  e.currentTarget.style.backgroundColor = 'var(--surface)';
-                                  e.currentTarget.style.borderColor = 'var(--outline)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.color = 'var(--muted)';
-                                  e.currentTarget.style.backgroundColor = 'transparent';
-                                  e.currentTarget.style.borderColor = 'transparent';
-                                }}
-                                title="查看历史记录"
-                              >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </button>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

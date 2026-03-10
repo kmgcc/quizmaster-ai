@@ -780,7 +780,7 @@ export const QuizReviewer: React.FC<Props> = ({
 
         {/* Interim Continue Button */}
         {isInterim && onContinue && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/45 dark:bg-zinc-900/35 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up">
+          <div className="shrink-0 p-4 bg-white/45 dark:bg-zinc-900/35 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex justify-center z-10 animate-slide-up" style={{ paddingBottom: 'calc(var(--content-safe-bottom) + 16px)' }}>
               <button 
                 onClick={onContinue}
                 className="px-12 py-3 text-white text-lg font-bold rounded-full transition transform active:scale-95 flex items-center gap-2"

@@ -35,16 +35,6 @@ const App: React.FC = () => {
   const backupFileInputRef = useRef<HTMLInputElement>(null);
   const [settingsPosition, setSettingsPosition] = useState<{ top: number; right: number } | null>(null);
 
-  // --- Global Mouse Tracker ---
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      document.body.style.setProperty('--mouse-x', `${e.clientX}px`);
-      document.body.style.setProperty('--mouse-y', `${e.clientY}px`);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
   // --- Dark Mode & Theme Logic ---
   useEffect(() => {
     const updateTheme = () => {

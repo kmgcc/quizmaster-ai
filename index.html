@@ -68,9 +68,9 @@
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.5s ease;
-        /* Fainter and smaller glow for subtle effect */
-        background: radial-gradient(100px circle at var(--mouse-x) var(--mouse-y), rgba(var(--theme-rgb), 0.03), transparent 100%);
-        background-attachment: fixed;
+        /* Fainter and smaller glow for subtle effect - uses element-relative coordinates */
+        background: radial-gradient(100px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.03), transparent 100%);
+        border-radius: inherit;
       }
       
       .spotlight-border {
@@ -80,9 +80,9 @@
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.3s ease;
-        background: radial-gradient(100px circle at var(--mouse-x) var(--mouse-y), rgba(var(--theme-rgb), 0.6), transparent 100%);
-        background-attachment: fixed;
+        background: radial-gradient(100px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(var(--theme-rgb), 0.6), transparent 100%);
         padding: 1px;
+        border-radius: inherit;
         mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
         -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
         mask-composite: exclude;
