@@ -520,7 +520,7 @@ export const ChatDrawer: React.FC<Props> = ({
 
   // 处理键盘事件（Enter发送，Shift+Enter换行）
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !(e.nativeEvent as any).isComposing) {
+    if (e.key === 'Enter' && !e.shiftKey && e.keyCode !== 229) {
       e.preventDefault();
       if (!loading && input.trim()) {
         sendMessage(input);
