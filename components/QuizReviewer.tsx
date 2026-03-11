@@ -645,7 +645,7 @@ export const QuizReviewer: React.FC<Props> = ({
                         })()}
                     </span>
                     {isFlagged && (
-                        <span className="px-2 py-0.5 text-xs font-bold rounded-full flex items-center gap-1" style={{ backgroundColor: 'var(--warning)', color: 'var(--on-primary)', opacity: 0.2 }}>
+                        <span className="px-2 py-0.5 text-xs font-bold rounded-full inline-flex items-center gap-1" style={{ backgroundColor: 'var(--warning)', color: 'var(--on-primary)' }}>
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M3 6a1 1 0 011-1h15a1 1 0 011 1v9a1 1 0 01-1 1h-6.101l-2.424 2.424A1 1 0 019 18V16H4a1 1 0 01-1-1V6z" /></svg>
                             存疑
                         </span>
@@ -675,7 +675,7 @@ export const QuizReviewer: React.FC<Props> = ({
                       <span>{isActive ? '正在讨论...' : '✨ 问 AI'}</span>
                     </button>
                     <span
-                      className="px-3 py-1 rounded-full text-xs font-bold"
+                      className="px-3 py-1 rounded-full text-xs font-bold inline-flex items-center justify-center"
                       style={{
                         backgroundColor: isCorrect 
                           ? 'rgba(var(--success-rgb, 34, 197, 94), 0.2)'

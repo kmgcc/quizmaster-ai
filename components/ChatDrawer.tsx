@@ -258,6 +258,7 @@ export const ChatDrawer: React.FC<Props> = ({
   const [history, setHistory] = useState<ExtendedChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMultiline, setIsMultiline] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const shouldAutoScroll = useRef(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -517,13 +518,18 @@ export const ChatDrawer: React.FC<Props> = ({
     }
   };
 
-  // 处理键盘事件（只允许换行，不允许回车发送）
+  // 处理键盘事件（Enter发送，Shift+Enter换行）
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Enter 键不发送，只允许换行（Shift+Enter）
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault(); // 阻止默认行为，不发送消息
+      e.preventDefault();
+      if (!loading && input.trim()) {
+        sendMessage(input);
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
+      }
     }
-    // Shift+Enter 允许换行（不阻止）
+    // Shift+Enter 允许换行（默认行为，不阻止）
   };
 
   // 自动调整 textarea 高度
@@ -531,7 +537,10 @@ export const ChatDrawer: React.FC<Props> = ({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`; // 最大高度 120px
+      const newHeight = Math.min(textarea.scrollHeight, 120);
+      textarea.style.height = `${newHeight}px`;
+      // 判断是否多行（超过单行高度40px）
+      setIsMultiline(newHeight > 44);
     }
   };
 
@@ -744,10 +753,10 @@ export const ChatDrawer: React.FC<Props> = ({
               adjustTextareaHeight();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="输入消息... (点击按钮发送，Shift+Enter 换行)"
+            placeholder="问问你想知道的"
             disabled={loading}
             rows={1}
-            className="flex-1 border rounded-2xl px-4 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px]"
+            className={`flex-1 border px-4 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px] ${isMultiline ? 'rounded-2xl' : 'rounded-full'}`}
             style={{
               borderColor: 'var(--outline)',
               backgroundColor: 'var(--surface)',
