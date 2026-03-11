@@ -520,7 +520,7 @@ export const ChatDrawer: React.FC<Props> = ({
 
   // 处理键盘事件（Enter发送，Shift+Enter换行）
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !(e.nativeEvent as any).isComposing) {
       e.preventDefault();
       if (!loading && input.trim()) {
         sendMessage(input);
@@ -529,7 +529,6 @@ export const ChatDrawer: React.FC<Props> = ({
         }
       }
     }
-    // Shift+Enter 允许换行（默认行为，不阻止）
   };
 
   // 自动调整 textarea 高度
