@@ -744,7 +744,7 @@ export const ChatDrawer: React.FC<Props> = ({
           </div>
         )}
         
-        <div className="flex gap-2 items-end">
+        <div className="flex gap-2 items-start">
           <textarea
             ref={textareaRef}
             value={input}
@@ -756,7 +756,7 @@ export const ChatDrawer: React.FC<Props> = ({
             placeholder="问问你想知道的"
             disabled={loading}
             rows={1}
-            className={`flex-1 border px-4 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[40px] max-h-[120px] ${isMultiline ? 'rounded-2xl' : 'rounded-full'}`}
+            className={`flex-1 border px-4 py-2.5 text-sm focus:outline-none transition-colors disabled:opacity-50 resize-none overflow-y-auto min-h-[44px] max-h-[120px] leading-5 ${isMultiline ? 'rounded-3xl' : 'rounded-full'}`}
             style={{
               borderColor: 'var(--outline)',
               backgroundColor: 'var(--surface)',
@@ -773,7 +773,7 @@ export const ChatDrawer: React.FC<Props> = ({
               }
             }}
             disabled={loading || !input.trim()}
-            className="p-2 rounded-full transition shrink-0"
+            className="w-11 h-11 rounded-full transition shrink-0 flex items-center justify-center"
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--on-primary)',
