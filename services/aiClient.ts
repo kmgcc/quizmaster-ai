@@ -38,6 +38,13 @@ export interface StreamChatPayload {
 export type OnSnapshotCallback = (snapshot: string) => void;
 
 /**
+ * 流式聊天选项
+ */
+export interface StreamChatOptions {
+  signal?: AbortSignal;
+}
+
+/**
  * 清理消息内容，移除可能导致 JSON 解析错误的字符
  * 移除流式输出指示符●，确保 JSON 序列化正确
  */
@@ -120,7 +127,8 @@ function safeStringify(obj: any): string {
  */
 export async function streamChat(
   payload: StreamChatPayload,
-  onSnapshot: OnSnapshotCallback
+  onSnapshot: OnSnapshotCallback,
+  options?: StreamChatOptions
 ): Promise<void> {
   const apiKey = localStorage.getItem('qb_api_key');
   if (!apiKey) {
@@ -202,6 +210,11 @@ export async function streamChat(
 
   try {
     while (true) {
+      // 检查是否已中止
+      if (options?.signal?.aborted) {
+        throw new Error('用户已取消');
+      }
+      
       const { done, value } = await reader.read();
       if (done) break;
 
@@ -210,6 +223,11 @@ export async function streamChat(
       sseBuffer = lines.pop() || ''; // 保留最后一个不完整的行
 
       for (const line of lines) {
+        // 检查是否已中止
+        if (options?.signal?.aborted) {
+          throw new Error('用户已取消');
+        }
+        
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
           if (data === '[DONE]') {
@@ -322,7 +340,8 @@ function buildSystemPrompt(payload: StreamChatPayload): string {
  */
 export async function mockStreamChat(
   payload: StreamChatPayload,
-  onSnapshot: OnSnapshotCallback
+  onSnapshot: OnSnapshotCallback,
+  options?: StreamChatOptions
 ): Promise<void> {
   // 模拟 AI 回复
   const mockResponse = `你好！关于这道题，我来为你详细解释一下。
@@ -364,6 +383,11 @@ function example() {
   const delay = 10; // 每批延迟10ms，整体更快
   
   for (let index = 0; index < words.length; index += batchSize) {
+    // 检查是否已中止
+    if (options?.signal?.aborted) {
+      throw new Error('用户已取消');
+    }
+    
     const batch = words.slice(index, index + batchSize).join('');
     contentBuffer += batch; // 累积到 buffer
     onSnapshot(contentBuffer); // 传递 snapshot（到目前为止的全文）

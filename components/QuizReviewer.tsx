@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { QuestionBank, QuizSession, Question, UserResponse, AISettings, ChatMessage } from '../types';
 import { ChatDrawer } from './ChatDrawer';
-import { highlightCode } from '../utils/codeHighlighter';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { BankMeta, QuestionContext } from '../services/aiClient';
 
 // Media query hook for dock mode detection
@@ -32,101 +32,6 @@ function useMediaQuery(query: string): boolean {
 
   return matches;
 }
-
-// Markdown rendering helper (simplified for review)
-const renderMarkdownText = (text: string): React.ReactNode => {
-  const parts: React.ReactNode[] = [];
-  
-  // Match code blocks first (``` ```)
-  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-  let match;
-  const codeBlocks: { start: number; end: number; lang: string; code: string }[] = [];
-  
-  while ((match = codeBlockRegex.exec(text)) !== null) {
-    codeBlocks.push({
-      start: match.index,
-      end: match.index + match[0].length,
-      lang: match[1] || 'code',
-      code: match[2]
-    });
-  }
-  
-  // Process text with inline code and bold
-  const processInline = (str: string, key: string) => {
-    const inlineParts = str.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
-    return inlineParts.map((part, i) => {
-      if (part.startsWith('`') && part.endsWith('`')) {
-        return (
-          <code 
-            key={`${key}-${i}`} 
-            className="px-1.5 py-0.5 rounded text-xs font-mono border"
-            style={{
-              backgroundColor: 'var(--tertiary-container)',
-              color: 'var(--on-tertiary-container)',
-              borderColor: 'var(--outline)',
-            }}
-          >
-            {part.slice(1, -1)}
-          </code>
-        );
-      }
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={`${key}-${i}`} className="font-bold" style={{ color: 'var(--text)' }}>{part.slice(2, -2)}</strong>;
-      }
-      return part;
-    });
-  };
-  
-  let lastIndex = 0;
-  codeBlocks.forEach((block, blockIdx) => {
-    // Add text before code block
-    if (block.start > lastIndex) {
-      const textBefore = text.substring(lastIndex, block.start);
-      parts.push(<span key={`text-${blockIdx}`}>{processInline(textBefore, `inline-${blockIdx}`)}</span>);
-    }
-    
-    // Add code block with syntax highlighting
-    parts.push(
-      <div 
-        key={`code-${blockIdx}`} 
-        className="my-2 rounded-lg overflow-hidden border shadow-sm"
-        style={{
-          borderColor: 'var(--outline)',
-          backgroundColor: '#1e1e1e',
-        }}
-      >
-        <div 
-          className="px-2 py-1 text-[10px] border-b font-bold uppercase flex justify-between items-center"
-          style={{
-            backgroundColor: '#252526',
-            color: 'var(--muted)',
-            borderColor: 'var(--outline)',
-          }}
-        >
-          <span>{block.lang || 'CODE'}</span>
-          <div className="flex gap-1 opacity-40">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5f56]"></span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ffbd2e]"></span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#27c93f]"></span>
-          </div>
-        </div>
-        <pre className="p-2 overflow-x-auto text-[#d4d4d4] text-xs leading-relaxed">
-          <code>{highlightCode(block.code, block.lang)}</code>
-        </pre>
-      </div>
-    );
-    
-    lastIndex = block.end;
-  });
-  
-  // Add remaining text
-  if (lastIndex < text.length) {
-    const remainingText = text.substring(lastIndex);
-    parts.push(<span key="text-end">{processInline(remainingText, 'inline-end')}</span>);
-  }
-  
-  return <>{parts}</>;
-};
 
 // 自适应高度的笔记框组件
 const AutoResizeTextarea: React.FC<{
@@ -688,7 +593,7 @@ export const QuizReviewer: React.FC<Props> = ({
                   </div>
                 </div>
                 <div className="font-medium mb-3 text-sm leading-relaxed break-words overflow-x-hidden" style={{ color: 'var(--text)' }}>
-                  {renderMarkdownText(q.content)}
+                  <MarkdownRenderer content={q.content} fullMarkdown={false} />
                 </div>
                 
                 {/* Display options for choice questions */}

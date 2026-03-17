@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { Question, QuestionType } from '../types';
-import { highlightCode } from '../utils/codeHighlighter';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { glowUtils } from '../hooks/useGlowManager';
 
 interface Props {
@@ -12,81 +12,7 @@ interface Props {
   isCorrect?: boolean;
 }
 
-// Markdown rendering helper
-const renderMarkdownText = (text: string): React.ReactNode => {
-  const parts: React.ReactNode[] = [];
-  let currentIndex = 0;
-  
-  // Match code blocks first (``` ```)
-  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-  let match;
-  const codeBlocks: { start: number; end: number; lang: string; code: string }[] = [];
-  
-  while ((match = codeBlockRegex.exec(text)) !== null) {
-    codeBlocks.push({
-      start: match.index,
-      end: match.index + match[0].length,
-      lang: match[1] || 'code',
-      code: match[2]
-    });
-  }
-  
-  // Process text with inline code and bold
-  const processInline = (str: string, key: string) => {
-    const inlineParts = str.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
-    return inlineParts.map((part, i) => {
-      if (part.startsWith('`') && part.endsWith('`')) {
-        return (
-          <code key={`${key}-${i}`} className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded text-sm font-mono border border-amber-200 dark:border-amber-800">
-            {part.slice(1, -1)}
-          </code>
-        );
-      }
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={`${key}-${i}`} className="font-bold text-slate-900 dark:text-white">{part.slice(2, -2)}</strong>;
-      }
-      return part;
-    });
-  };
-  
-  let lastIndex = 0;
-  codeBlocks.forEach((block, blockIdx) => {
-    // Add text before code block
-    if (block.start > lastIndex) {
-      const textBefore = text.substring(lastIndex, block.start);
-      parts.push(<span key={`text-${blockIdx}`}>{processInline(textBefore, `inline-${blockIdx}`)}</span>);
-    }
-    
-    // Add code block with syntax highlighting
-    parts.push(
-      <div key={`code-${blockIdx}`} className="my-3 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-[#1e1e1e] shadow-md">
-        <div className="px-3 py-1.5 bg-[#252526] text-xs text-slate-400 border-b border-slate-700 font-bold uppercase flex justify-between items-center">
-          <span>{block.lang || 'CODE'}</span>
-          <div className="flex gap-1.5 opacity-50">
-            <span className="w-2 h-2 rounded-full bg-[#ff5f56]"></span>
-            <span className="w-2 h-2 rounded-full bg-[#ffbd2e]"></span>
-            <span className="w-2 h-2 rounded-full bg-[#27c93f]"></span>
-          </div>
-        </div>
-        <pre className="p-3 overflow-x-auto text-[#d4d4d4] text-sm leading-relaxed">
-          <code>{highlightCode(block.code, block.lang)}</code>
-        </pre>
-      </div>
-    );
-    
-    lastIndex = block.end;
-  });
-  
-  // Add remaining text
-  if (lastIndex < text.length) {
-    const remainingText = text.substring(lastIndex);
-    parts.push(<span key="text-end">{processInline(remainingText, 'inline-end')}</span>);
-  }
-  
-  return <>{parts}</>;
-};
-
-export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onChange, disabled, showFeedback, isCorrect, themeColor }) => {
+export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onChange, disabled, showFeedback, isCorrect }) => {
   
   const glowRef = useCallback((node: HTMLElement | null) => {
     if (node) {
@@ -170,7 +96,7 @@ export const QuestionRenderer: React.FC<Props> = ({ question, currentAnswer, onC
   const renderContent = () => (
     <div className="mb-6 xl:mb-0">
       <div className="text-base lg:text-lg font-medium text-slate-900 dark:text-slate-100 leading-relaxed">
-        {renderMarkdownText(question.content)}
+        <MarkdownRenderer content={question.content} fullMarkdown={false} />
       </div>
     </div>
   );
